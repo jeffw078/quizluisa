@@ -103,3 +103,20 @@ textarea:focus {
   box-shadow: 0 0 8px rgba(255, 105, 180, 0.4);
 }
 
+button#enviarMensagem {
+  background: linear-gradient(to right, #ffd6e8, #ffe9ec);
+  border: none;
+  padding: 10px 20px;
+  border-radius: 20px;
+  font-size: 1rem;
+  color: #8b4a6f;
+  cursor: pointer;
+  box-shadow: 2px 2px 6px rgba(255, 182, 193, 0.3);
+  transition: all 0.3s ease;
+}
+
+button#enviarMensagem:hover {
+  background: linear-gradient(to right, #ffc1d6, #ffd1dc);
+  transform: scale(1.03);
+}
+
