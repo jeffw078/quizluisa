@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Quiz da Luísa</title>
+  <link rel="stylesheet" href="style.css">
+  
+</head>
+<body>
+  <header>
+    <h1>Quiz da Luísa 🎉</h1>
+    <img src="assets/pinwheel.png" class="pinwheel" alt="Cata-vento">
+  </header>
+  <main>
+    <div id="quiz-container"></div>
+    <button id="next-button" disabled>Próxima</button>
+  </main>
+  <footer>
+    <p>Com carinho para a Luísa 💖</p>
+  </footer>
+  <script>
+let currentQuestion = 0;
+let questions = [];
+let respostas = [];
+let nomeConvidado = "";
+let pontuacao = 0;
+
+fetch('questions.json')
+  .then(res => res.json())
+  .then(data => {
+    questions = data;
+    perguntarNome();
+  });
+
+function perguntarNome() {
+  const container = document.getElementById('quiz-container');
+  container.innerHTML = `
+    <div class="question">Qual o seu nome?</div>
+    <input type="text" id="nomeInput" placeholder="Seu nome...">
+  `;
+  const nextBtn = document.getElementById('next-button');
+  nextBtn.disabled = false;
+  nextBtn.onclick = () => {
+    const input = document.getElementById('nomeInput');
+    if (input.value.trim() !== "") {
+      nomeConvidado = input.value.trim();
+      showQuestion();
+    }
+  };
+}
+
+function showQuestion() {
+  const q = questions[currentQuestion];
+  const container = document.getElementById('quiz-container');
+  const nextBtn = document.getElementById('next-button');
+
+  container.innerHTML = `
+    <div class="question">${q.pergunta}</div>
+    ${q.respostas.map((r, i) => `<button class="answer" data-index="${i}">${r}</button>`).join('')}
+  `;
+
+  nextBtn.disabled = true;
+
+  document.querySelectorAll('.answer').forEach(btn => {
+    btn.addEventListener('click', e => {
+      const index = parseInt(e.target.dataset.index);
+      const correta = index === q.correta;
+      if (correta) pontuacao++;
+      respostas.push({ pergunta: q.pergunta, resposta: q.respostas[index], correta });
+
+      btn.classList.add(correta ? 'correct' : 'incorrect');
+      document.querySelectorAll('.answer').forEach(b => b.disabled = true);
+      nextBtn.disabled = false;
+    });
+  });
+
+  nextBtn.onclick = () => {
+    currentQuestion++;
+    if (currentQuestion < questions.length) {
+      showQuestion();
+    } else {
+      mostrarMensagemFinal();
+    }
+  };
+}
+
+function mostrarMensagemFinal() {
+  const container = document.getElementById('quiz-container');
+  const nextBtn = document.getElementById('next-button');
+
+  container.innerHTML = `
+    <h2>Parabéns, ${nomeConvidado}!</h2>
+    <p>Você acertou <strong>${pontuacao}</strong> de ${questions.length} perguntas.</p>
+    <p>Deixe uma mensagem para a Luísa ler no futuro:</p>
+    <textarea id="mensagem" placeholder="Escreva algo bonito..." rows="4"></textarea>
+    <br><br>
+    <button id="enviarMensagem" class="next-button">Enviar Mensagem</button>
+  `;
+
+  nextBtn.style.display = "none";
+  document.getElementById('enviarMensagem').onclick = () => {
+    const mensagem = document.getElementById('mensagem').value.trim();
+    if (mensagem) {
+      const registro = {
+        nome: nomeConvidado,
+        pontuacao,
+        total: questions.length,
+        mensagem,
+        data: new Date().toLocaleString()
+      };
+      fetch('/salvar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(registro)
+      }).then(() => {
+        window.location.href = `https://wa.me/?text=Eu%20participei%20do%20quiz%20da%20Lu%C3%ADsa%20e%20amei!%20%F0%9F%92%96`;
+      });
+    }
+  }
+}
+  </script>
+</body>
+</html>

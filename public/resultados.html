@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Resultados do Quiz</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>📊 Resultados do Quiz da Luísa</h1>
+  </header>
+  <main id="resultados"></main>
+  <script>
+    fetch('/resultados')
+      .then(res => res.json())
+      .then(data => {
+        const container = document.getElementById('resultados');
+        if (!data.length) {
+          container.innerHTML = "<p>Ninguém respondeu ainda 😢</p>";
+          return;
+        }
+
+        container.innerHTML = `<ul>` + data.map(r => `
+          <li>
+            <strong>${r.nome}</strong> — ${r.pontuacao}/${r.total} pontos
+            <br><em>${r.data}</em>
+            ${r.mensagem ? `<p><strong>Mensagem:</strong> ${r.mensagem}</p>` : ''}
+          </li>
+        `).join('') + `</ul>`;
+      });
+  </script>
+</body>
+</html>

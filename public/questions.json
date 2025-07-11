@@ -1,0 +1,12 @@
+[
+  {
+    "pergunta": "Qual é o brinquedo preferido da Luísa?",
+    "respostas": ["Bola", "Boneca", "Panela", "Cata-vento"],
+    "correta": 3
+  },
+  {
+    "pergunta": "Qual foi a primeira palavra da Luísa?",
+    "respostas": ["Papai", "Mamãe", "Vovó", "Dada"],
+    "correta": 1
+  }
+]

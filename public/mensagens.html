@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Mensagens para Luísa</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>📖 Caderno de Recordações da Luísa</h1>
+  </header>
+  <main id="mensagens"></main>
+  <footer>
+    <p>Com carinho, amigos da Luísa 💌</p>
+  </footer>
+  <script>
+    fetch('/mensagens')
+      .then(res => res.json())
+      .then(data => {
+        const container = document.getElementById('mensagens');
+        if (!data.length) {
+          container.innerHTML = "<p>Nenhuma mensagem ainda.</p>";
+          return;
+        }
+
+        container.innerHTML = data.map(m => `
+          <div class="mensagem">
+            <p>"${m.mensagem}"</p>
+            <small>— ${m.nome}, em ${m.data}</small>
+          </div>
+        `).join('');
+      });
+  </script>
+</body>
+</html>
