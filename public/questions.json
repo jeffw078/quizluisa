@@ -1,12 +1,102 @@
 [
   {
-    "pergunta": "Qual é o brinquedo preferido da Luísa?",
-    "respostas": ["Bola", "Boneca", "Panela", "Cata-vento"],
+    "pergunta": "Qual a data de nascimento da Luísa?",
+    "respostas": ["31/10/2024", "01/11/2024", "10/11/2024", "15/11/2024"],
+    "correta": 1
+  },
+  {
+    "pergunta": "Qual é a primeira palavra que a Luísa falou?",
+    "respostas": ["Papa", "Mama", "Nene", "Não sei ainda 😅"],
     "correta": 3
   },
   {
-    "pergunta": "Qual foi a primeira palavra da Luísa?",
-    "respostas": ["Papai", "Mamãe", "Vovó", "Dada"],
+    "pergunta": "Qual dessas comidas a Luísa mais gosta?",
+    "respostas": ["Banana", "Papinha de batata", "Leite materno", "Biscoitinho de polvilho"],
+    "correta": 0
+  },
+  {
+    "pergunta": "Qual é o brinquedo favorito da Luísa?",
+    "respostas": ["Cata-vento", "Ursinho de pelúcia", "Chocalho", "Livro de pano"],
+    "correta": 0
+  },
+  {
+    "pergunta": "Quem trocou a primeira fralda da Luísa?",
+    "respostas": ["Mamãe", "Papai", "Vovó", "Titio"],
+    "correta": 0
+  },
+  {
+    "pergunta": "A Luísa já viajou para onde?",
+    "respostas": ["Praia", "Campo", "Casa da vovó", "Ainda não"],
+    "correta": 0
+  },
+  {
+    "pergunta": "Com quantos meses a Luísa começou a engatinhar?",
+    "respostas": ["4", "6", "8", "10"],
+    "correta": 2
+  },
+  {
+    "pergunta": "O que a Luísa fez no seu primeiro Natal?",
+    "respostas": ["Chorou", "Ganhou presente", "Dormiu cedo", "Tudo isso"],
+    "correta": 0
+  },
+  {
+    "pergunta": "Qual música faz a Luísa dançar na hora?",
+    "respostas": ["Baby Shark", "Galinha Pintadinha", "Bita", "Barulhinho do micro-ondas"],
+    "correta": 2
+  },
+  {
+    "pergunta": "O que a Luísa mais vai amar no futuro?",
+    "respostas": ["Saber que teve tanto amor logo cedo", "Ver como todos participaram do quiz", "Ler as mensagens deixadas para ela", "Todas as anteriores ❤️"],
+    "correta": 3
+  },
+  {
+    "pergunta": "Com quantos quilos a Luísa nasceu?",
+    "respostas": ["2,8 kg", "3,2 kg", "3,5 kg", "4 kg"],
+    "correta": 2
+  },
+  {
+    "pergunta": "Qual era o tamanho da Luísa ao nascer?",
+    "respostas": ["45 cm", "48 cm", "50 cm", "52 cm"],
+    "correta": 2
+  },
+  {
+    "pergunta": "Quando a Luísa deu o primeiro sorriso?",
+    "respostas": ["1 mês", "2 meses", "3 meses", "4 meses"],
     "correta": 1
+  },
+  {
+    "pergunta": "Quem ensinou a Luísa a bater palminha?",
+    "respostas": ["Mamãe", "Papai", "A vovó", "A TV"],
+    "correta": 1
+  },
+  {
+    "pergunta": "Quando a Luísa começou a balbuciar?",
+    "respostas": ["3 meses", "5 meses", "6 meses", "8 meses"],
+    "correta": 1
+  },
+  {
+    "pergunta": "De que cor é o quarto da Luísa?",
+    "respostas": ["Rosa", "Azul claro", "Verde menta", "Lilás"],
+    "correta": 0
+  },
+  {
+    "pergunta": "Quantos dentinhos a Luísa já tem?",
+    "respostas": ["Nenhum ainda", "2", "4", "Mais de 6!"],
+    "correta": 2
+  },
+  {
+    "pergunta": "Qual foi a primeira festinha que a Luísa foi convidada?",
+    "respostas": ["Chá de bebê", "Aniversário da prima", "Casamento dos tios", "Ainda não foi"],
+    "correta": 1
+  },
+  {
+    "pergunta": "Como você descreveria a Luísa em uma palavra?",
+    "respostas": ["Amor", "Luz", "Alegria", "Presente"],
+    "correta": 3
+  },
+  {
+    "pergunta": "Qual é o superpoder secreto da Luísa?",
+    "respostas": ["Encantar todo mundo com um sorriso", "Fazer todo mundo se apaixonar", "Hipnotizar com os olhinhos", "Todos os anteriores ✨"],
+    "correta": 3
   }
 ]

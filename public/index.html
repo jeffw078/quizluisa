@@ -5,7 +5,30 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Quiz da Luísa</title>
   <link rel="stylesheet" href="style.css">
-  
+  <style>
+    .mensagem-card {
+      background-color: #fff8fc;
+      border: 2px solid #ffd6e8;
+      border-radius: 12px;
+      padding: 12px;
+      margin: 10px;
+      box-shadow: 2px 2px 6px rgba(255, 182, 193, 0.3);
+    }
+    .mensagem-card p {
+      margin: 5px 0;
+    }
+    .resultado-card {
+      background-color: #f0fff4;
+      border: 2px solid #a0e8c5;
+      border-radius: 12px;
+      padding: 12px;
+      margin: 10px;
+      box-shadow: 2px 2px 6px rgba(160, 232, 197, 0.3);
+    }
+    .resultado-card p {
+      margin: 5px 0;
+    }
+  </style>
 </head>
 <body>
   <header>
@@ -36,6 +59,7 @@ fetch('questions.json')
 function perguntarNome() {
   const container = document.getElementById('quiz-container');
   container.innerHTML = `
+    <p class="intro-msg">Você será convidado para o aniversário de 1 aninho da Luísa, mas para isso, primeiro, você deverá responder esse Quiz! Preparado?!</p>
     <div class="question">Qual o seu nome?</div>
     <input type="text" id="nomeInput" placeholder="Seu nome...">
   `;
@@ -80,26 +104,28 @@ function showQuestion() {
     if (currentQuestion < questions.length) {
       showQuestion();
     } else {
-      mostrarMensagemFinal();
+      mostrarCataventos();
     }
   };
 }
+ 
 
 function mostrarMensagemFinal() {
   const container = document.getElementById('quiz-container');
   const nextBtn = document.getElementById('next-button');
 
   container.innerHTML = `
-    <h2>Parabéns, ${nomeConvidado}!</h2>
-    <p>Você acertou <strong>${pontuacao}</strong> de ${questions.length} perguntas.</p>
-    <p>Deixe uma mensagem eu ler no futuro,</p><br><br>
-    <p>pois esse é meu primeiro cardeno de recordações!</p><br><br>
-    <textarea id="mensagem" placeholder="Escreva algo bonito..." rows="4"></textarea>
-    <br><br>
-    <button id="enviarMensagem" class="next-button">Enviar Mensagem</button>
+    <div class="resultado-card">
+      <h2>Parabéns, ${nomeConvidado}!</h2>
+      <p>Você acertou <strong>${pontuacao}</strong> de ${questions.length} perguntas.</p>
+      <p>Deixe uma mensagem para a Luísa ler no futuro:</p>
+      <textarea id="mensagem" placeholder="Escreva algo bonito..." rows="4"></textarea>
+      <br><br>
+      <button id="enviarMensagem">Enviar Mensagem</button>
+    </div>
   `;
 
-  nextBtn.style.display = "none";
+  if (nextBtn) nextBtn.style.display = "none";
   document.getElementById('enviarMensagem').onclick = () => {
     const mensagem = document.getElementById('mensagem').value.trim();
     if (mensagem) {
@@ -115,7 +141,7 @@ function mostrarMensagemFinal() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(registro)
       }).then(() => {
-        window.location.href = `https://wa.me/?text=Eu%20participei%20do%20quiz%20da%20Lu%C3%ADsa%20e%20amei!%20%F0%9F%92%96`;
+        window.location.href = `https://wa.me/5547988253536?text=Acabei%20de%20terminar%20o%20Quiz%20do%20anivers%C3%A1rio%20da%20Lu%C3%ADsa!%20Quero%20confirmar%20minha%20presen%C3%A7a!`;
       });
     }
   }
