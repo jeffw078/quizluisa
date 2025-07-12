@@ -104,11 +104,10 @@ function showQuestion() {
     if (currentQuestion < questions.length) {
       showQuestion();
     } else {
-      mostrarCataventos();
+      mostrarMensagemFinal();
     }
   };
 }
- 
 
 function mostrarMensagemFinal() {
   const container = document.getElementById('quiz-container');
@@ -141,7 +140,7 @@ function mostrarMensagemFinal() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(registro)
       }).then(() => {
-        window.location.href = `https://wa.me/5547988253536?text=Acabei%20de%20terminar%20o%20Quiz%20do%20anivers%C3%A1rio%20da%20Lu%C3%ADsa!%20Quero%20confirmar%20minha%20presen%C3%A7a!`;
+        window.location.href = `https://wa.me/5547988253536?text=Acabei%20de%20responder%20o%20Quiz%20da%20Lu%C3%ADsa!%20Quero%20o%20convite%20para%20o%20anivers%C3%A1rio!`;
       });
     }
   }
