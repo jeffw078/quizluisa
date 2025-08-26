@@ -28,15 +28,31 @@
     .resultado-card p {
       margin: 5px 0;
     }
+    .loading {
+      display: inline-block;
+      margin: 20px;
+      font-style: italic;
+      color: #666;
+    }
+    .error {
+      background-color: #ffe6e6;
+      border: 2px solid #ff9999;
+      border-radius: 12px;
+      padding: 12px;
+      margin: 10px;
+      color: #cc0000;
+    }
   </style>
 </head>
 <body>
   <header>
     <h1>Quiz da Luísa 🎉</h1>
-    <img src="assets/pinwheel.png" class="pinwheel" alt="Cata-vento">
+    <img src="assets/pinwheel.png" class="pinwheel" alt="Cata-vento" onerror="this.style.display='none'">
   </header>
   <main>
-    <div id="quiz-container"></div>
+    <div id="quiz-container">
+      <div class="loading">Carregando perguntas...</div>
+    </div>
     <button id="next-button" disabled>Próxima</button>
   </main>
   <footer>
@@ -49,11 +65,26 @@ let respostas = [];
 let nomeConvidado = "";
 let pontuacao = 0;
 
+// Carregar perguntas
 fetch('questions.json')
-  .then(res => res.json())
+  .then(res => {
+    if (!res.ok) {
+      throw new Error(`HTTP error! status: ${res.status}`);
+    }
+    return res.json();
+  })
   .then(data => {
     questions = data;
     perguntarNome();
+  })
+  .catch(error => {
+    console.error('Erro ao carregar perguntas:', error);
+    document.getElementById('quiz-container').innerHTML = `
+      <div class="error">
+        <h3>Erro ao carregar o quiz</h3>
+        <p>Não foi possível carregar as perguntas. Tente recarregar a página.</p>
+      </div>
+    `;
   });
 
 function perguntarNome() {
@@ -61,17 +92,29 @@ function perguntarNome() {
   container.innerHTML = `
     <p class="intro-msg">Você será convidado para o aniversário de 1 aninho da Luísa, mas para isso, primeiro, você deverá responder esse Quiz! Preparado?!</p>
     <div class="question">Qual o seu nome?</div>
-    <input type="text" id="nomeInput" placeholder="Seu nome...">
+    <input type="text" id="nomeInput" placeholder="Seu nome..." maxlength="50">
   `;
+  
   const nextBtn = document.getElementById('next-button');
+  const input = document.getElementById('nomeInput');
+  
   nextBtn.disabled = false;
   nextBtn.onclick = () => {
-    const input = document.getElementById('nomeInput');
     if (input.value.trim() !== "") {
       nomeConvidado = input.value.trim();
       showQuestion();
+    } else {
+      alert('Por favor, digite seu nome!');
     }
   };
+
+  // Permitir pressionar Enter para continuar
+  input.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter' && input.value.trim() !== "") {
+      nomeConvidado = input.value.trim();
+      showQuestion();
+    }
+  });
 }
 
 function showQuestion() {
@@ -80,6 +123,7 @@ function showQuestion() {
   const nextBtn = document.getElementById('next-button');
 
   container.innerHTML = `
+    <div class="question">Pergunta ${currentQuestion + 1} de ${questions.length}</div>
     <div class="question">${q.pergunta}</div>
     ${q.respostas.map((r, i) => `<button class="answer" data-index="${i}">${r}</button>`).join('')}
   `;
@@ -93,7 +137,12 @@ function showQuestion() {
       if (correta) pontuacao++;
       respostas.push({ pergunta: q.pergunta, resposta: q.respostas[index], correta });
 
+      // Mostrar resposta correta
       btn.classList.add(correta ? 'correct' : 'incorrect');
+      if (!correta) {
+        document.querySelectorAll('.answer')[q.correta].classList.add('correct');
+      }
+      
       document.querySelectorAll('.answer').forEach(b => b.disabled = true);
       nextBtn.disabled = false;
     });
@@ -113,35 +162,79 @@ function mostrarMensagemFinal() {
   const container = document.getElementById('quiz-container');
   const nextBtn = document.getElementById('next-button');
 
+  const porcentagem = Math.round((pontuacao / questions.length) * 100);
+  let mensagemResultado = "";
+  
+  if (porcentagem >= 80) {
+    mensagemResultado = "Excelente! Você conhece muito bem a Luísa! 🌟";
+  } else if (porcentagem >= 60) {
+    mensagemResultado = "Muito bom! Você sabe bastante sobre a Luísa! 👏";
+  } else {
+    mensagemResultado = "Legal! Agora você conhece mais sobre a Luísa! 💝";
+  }
+
   container.innerHTML = `
     <div class="resultado-card">
       <h2>Parabéns, ${nomeConvidado}!</h2>
-      <p>Você acertou <strong>${pontuacao}</strong> de ${questions.length} perguntas.</p>
-      <p>Deixe uma mensagem para a Luísa ler no futuro:</p>
-      <textarea id="mensagem" placeholder="Escreva algo bonito..." rows="4"></textarea>
+      <p>Você acertou <strong>${pontuacao}</strong> de ${questions.length} perguntas (${porcentagem}%).</p>
+      <p>${mensagemResultado}</p>
+      <p>Deixe uma mensagem carinhosa para a Luísa ler no futuro:</p>
+      <textarea id="mensagem" placeholder="Escreva algo bonito para a Luísa..." rows="4" maxlength="500"></textarea>
       <br><br>
       <button id="enviarMensagem">Enviar Mensagem</button>
+      <div id="statusEnvio"></div>
     </div>
   `;
 
   if (nextBtn) nextBtn.style.display = "none";
+  
   document.getElementById('enviarMensagem').onclick = () => {
     const mensagem = document.getElementById('mensagem').value.trim();
+    const statusDiv = document.getElementById('statusEnvio');
+    const botaoEnviar = document.getElementById('enviarMensagem');
+    
     if (mensagem) {
+      botaoEnviar.disabled = true;
+      botaoEnviar.textContent = 'Enviando...';
+      statusDiv.innerHTML = '<p style="color: #666;">Salvando sua mensagem...</p>';
+      
       const registro = {
         nome: nomeConvidado,
         pontuacao,
         total: questions.length,
         mensagem,
-        data: new Date().toLocaleString()
+        data: new Date().toLocaleString('pt-BR')
       };
-      fetch('/salvar', {
+      
+      fetch('/api/salvar', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(registro)
-      }).then(() => {
-        window.location.href = `https://wa.me/5547988253536?text=Acabei%20de%20responder%20o%20Quiz%20da%20Lu%C3%ADsa!%20Quero%20o%20convite%20para%20o%20anivers%C3%A1rio!`;
+      })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+      })
+      .then(data => {
+        console.log('Resposta salva:', data);
+        statusDiv.innerHTML = '<p style="color: green;">✅ Mensagem salva com sucesso!</p>';
+        
+        // Aguardar um pouco antes de redirecionar
+        setTimeout(() => {
+          const whatsappMsg = encodeURIComponent(`Olá! Acabei de responder o Quiz da Luísa! Acertei ${pontuacao} de ${questions.length} perguntas. Quero o convite para o aniversário! 🎉`);
+          window.open(`https://wa.me/5547988253536?text=${whatsappMsg}`, '_blank');
+        }, 1500);
+      })
+      .catch(error => {
+        console.error('Erro ao salvar:', error);
+        statusDiv.innerHTML = '<p style="color: red;">❌ Erro ao salvar. Tente novamente.</p>';
+        botaoEnviar.disabled = false;
+        botaoEnviar.textContent = 'Tentar Novamente';
       });
+    } else {
+      alert('Por favor, escreva uma mensagem para a Luísa!');
     }
   }
 }

@@ -1,5 +1,16 @@
 {
-  "dependencies": {
-    "express": "^5.1.0"
+  "name": "quiz-luisa",
+  "version": "1.0.0",
+  "description": "Quiz de aniversário da Luísa",
+  "main": "api/salvar.js",
+  "scripts": {
+    "dev": "vercel dev",
+    "build": "echo 'Build complete'",
+    "start": "vercel --prod"
+  },
+  "dependencies": {},
+  "devDependencies": {},
+  "engines": {
+    "node": "18.x"
   }
 }

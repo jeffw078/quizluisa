@@ -2,32 +2,170 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <title>Resultados do Quiz</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Resultados do Quiz da Luísa</title>
   <link rel="stylesheet" href="style.css">
+  <style>
+    .resultado-item {
+      background-color: #fff8fc;
+      border: 2px solid #ffd6e8;
+      border-radius: 12px;
+      padding: 15px;
+      margin: 15px auto;
+      max-width: 600px;
+      box-shadow: 2px 2px 6px rgba(255, 182, 193, 0.3);
+    }
+    .resultado-item h3 {
+      color: #8b4a6f;
+      margin-top: 0;
+    }
+    .pontuacao {
+      font-size: 1.2em;
+      font-weight: bold;
+      color: #ff6b9d;
+    }
+    .mensagem {
+      background-color: #f0fff4;
+      border-left: 4px solid #a0e8c5;
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 5px;
+      font-style: italic;
+    }
+    .data {
+      color: #666;
+      font-size: 0.9em;
+    }
+    .loading {
+      text-align: center;
+      margin: 20px;
+      font-style: italic;
+      color: #666;
+    }
+    .error {
+      background-color: #ffe6e6;
+      border: 2px solid #ff9999;
+      border-radius: 12px;
+      padding: 15px;
+      margin: 15px auto;
+      max-width: 600px;
+      color: #cc0000;
+      text-align: center;
+    }
+    .empty {
+      text-align: center;
+      margin: 50px auto;
+      color: #666;
+      font-size: 1.1em;
+    }
+    .refresh-btn {
+      background: linear-gradient(to right, #ffd6e8, #ffe9ec);
+      border: none;
+      padding: 10px 20px;
+      border-radius: 20px;
+      font-size: 1rem;
+      color: #8b4a6f;
+      cursor: pointer;
+      margin: 20px auto;
+      display: block;
+      box-shadow: 2px 2px 6px rgba(255, 182, 193, 0.3);
+    }
+  </style>
 </head>
 <body>
   <header>
     <h1>📊 Resultados do Quiz da Luísa</h1>
   </header>
-  <main id="resultados"></main>
+  <main>
+    <button class="refresh-btn" onclick="carregarResultados()">🔄 Atualizar Resultados</button>
+    <div id="resultados">
+      <div class="loading">Carregando resultados...</div>
+    </div>
+    <div style="text-align: center; margin: 30px;">
+      <a href="index.html" style="color: #ff6b9d; text-decoration: none; font-size: 1.1em;">
+        ← Voltar ao Quiz
+      </a>
+    </div>
+  </main>
+  <footer>
+    <p>Com carinho para a Luísa 💖</p>
+  </footer>
   <script>
-    fetch('/resultados')
-      .then(res => res.json())
-      .then(data => {
-        const container = document.getElementById('resultados');
-        if (!data.length) {
-          container.innerHTML = "<p>Ninguém respondeu ainda 😢</p>";
-          return;
-        }
+    function carregarResultados() {
+      const container = document.getElementById('resultados');
+      container.innerHTML = '<div class="loading">Carregando resultados...</div>';
+      
+      fetch('/api/resultados')
+        .then(res => {
+          if (!res.ok) {
+            throw new Error(`HTTP error! status: ${res.status}`);
+          }
+          return res.json();
+        })
+        .then(data => {
+          if (!data || data.length === 0) {
+            container.innerHTML = `
+              <div class="empty">
+                <h3>🎈 Ainda não há respostas!</h3>
+                <p>Seja o primeiro a responder o quiz da Luísa!</p>
+              </div>
+            `;
+            return;
+          }
 
-        container.innerHTML = `<ul>` + data.map(r => `
-          <li>
-            <strong>${r.nome}</strong> — ${r.pontuacao}/${r.total} pontos
-            <br><em>${r.data}</em>
-            ${r.mensagem ? `<p><strong>Mensagem:</strong> ${r.mensagem}</p>` : ''}
-          </li>
-        `).join('') + `</ul>`;
-      });
+          // Ordenar por data (mais recente primeiro)
+          data.sort((a, b) => new Date(b.data) - new Date(a.data));
+
+          container.innerHTML = data.map((resultado, index) => {
+            const porcentagem = Math.round((resultado.pontuacao / resultado.total) * 100);
+            let emoji = "🎉";
+            if (porcentagem >= 80) emoji = "🌟";
+            else if (porcentagem >= 60) emoji = "👏";
+            else if (porcentagem >= 40) emoji = "💝";
+            
+            return `
+              <div class="resultado-item">
+                <h3>${emoji} ${resultado.nome}</h3>
+                <div class="pontuacao">
+                  ${resultado.pontuacao}/${resultado.total} perguntas corretas (${porcentagem}%)
+                </div>
+                ${resultado.mensagem ? `
+                  <div class="mensagem">
+                    "${resultado.mensagem}"
+                  </div>
+                ` : ''}
+                <div class="data">📅 ${resultado.data}</div>
+              </div>
+            `;
+          }).join('');
+          
+          // Adicionar estatísticas
+          const totalParticipantes = data.length;
+          const mediaAcertos = data.reduce((sum, r) => sum + r.pontuacao, 0) / totalParticipantes;
+          const melhorPontuacao = Math.max(...data.map(r => r.pontuacao));
+          
+          container.innerHTML += `
+            <div class="resultado-item" style="background-color: #f8f9ff; border-color: #c5d0ff;">
+              <h3>📊 Estatísticas Gerais</h3>
+              <p><strong>Total de participantes:</strong> ${totalParticipantes}</p>
+              <p><strong>Média de acertos:</strong> ${mediaAcertos.toFixed(1)} perguntas</p>
+              <p><strong>Melhor pontuação:</strong> ${melhorPontuacao}/${data[0]?.total || 5} perguntas</p>
+            </div>
+          `;
+        })
+        .catch(error => {
+          console.error('Erro ao carregar resultados:', error);
+          container.innerHTML = `
+            <div class="error">
+              <h3>❌ Erro ao carregar resultados</h3>
+              <p>Não foi possível carregar os resultados. Tente novamente.</p>
+            </div>
+          `;
+        });
+    }
+
+    // Carregar resultados quando a página carrega
+    document.addEventListener('DOMContentLoaded', carregarResultados);
   </script>
 </body>
 </html>
