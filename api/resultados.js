@@ -1,5 +1,5 @@
-// api/resultados.js - Função serverless para listar resultados
-export default async function handler(req, res) {
+// api/resultados.js - Função serverless corrigida
+export default function handler(req, res) {
   // Configurar CORS
   res.setHeader('Access-Control-Allow-Credentials', true);
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -13,24 +13,60 @@ export default async function handler(req, res) {
 
   if (req.method === 'GET') {
     try {
-      // Em um ambiente real, você buscaria do banco de dados
-      // Por enquanto, retorna dados de exemplo
-      const resultados = [
+      // Em ambiente serverless demo, retornar dados de exemplo
+      const resultadosDemo = [
         {
-          nome: "Exemplo",
+          id: "demo1",
+          nome: "Maria",
+          pontuacao: 4,
+          total: 5,
+          mensagem: "Muito divertido! A Luísa vai amar esse quiz! 💖",
+          data: new Date(Date.now() - 86400000).toLocaleString('pt-BR'),
+          timestamp: new Date(Date.now() - 86400000).toISOString()
+        },
+        {
+          id: "demo2", 
+          nome: "João",
           pontuacao: 3,
           total: 5,
-          mensagem: "Mensagem de exemplo para a Luísa!",
-          data: new Date().toLocaleString('pt-BR')
+          mensagem: "Parabéns Luísa pelo seu aniversário! 🎉",
+          data: new Date(Date.now() - 43200000).toLocaleString('pt-BR'),
+          timestamp: new Date(Date.now() - 43200000).toISOString()
+        },
+        {
+          id: "demo3",
+          nome: "Ana",
+          pontuacao: 5,
+          total: 5,
+          mensagem: "Que cresça sempre feliz e saudável! ✨",
+          data: new Date().toLocaleString('pt-BR'),
+          timestamp: new Date().toISOString()
         }
       ];
 
-      res.status(200).json(resultados);
+      console.log('Resultados solicitados:', resultadosDemo.length + ' registros');
+
+      res.status(200).json({
+        success: true,
+        count: resultadosDemo.length,
+        data: resultadosDemo,
+        note: 'Dados de exemplo (ambiente serverless demo)',
+        timestamp: new Date().toISOString()
+      });
+
     } catch (error) {
       console.error('Erro ao buscar resultados:', error);
-      res.status(500).json({ error: 'Erro interno do servidor' });
+      res.status(500).json({ 
+        error: 'Erro interno do servidor',
+        details: error.message,
+        timestamp: new Date().toISOString()
+      });
     }
   } else {
-    res.status(405).json({ error: 'Método não permitido' });
+    res.status(405).json({ 
+      error: 'Método não permitido',
+      allowedMethods: ['GET'],
+      receivedMethod: req.method
+    });
   }
 }

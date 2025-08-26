@@ -97,24 +97,31 @@
       
       fetch('/api/resultados')
         .then(res => {
+          console.log('Response status:', res.status);
           if (!res.ok) {
             throw new Error(`HTTP error! status: ${res.status}`);
           }
           return res.json();
         })
-        .then(data => {
+        .then(responseData => {
+          console.log('Dados recebidos:', responseData);
+          
+          // Verificar se a resposta tem o formato correto
+          const data = responseData.data || responseData;
+          
           if (!data || data.length === 0) {
             container.innerHTML = `
               <div class="empty">
                 <h3>🎈 Ainda não há respostas!</h3>
                 <p>Seja o primeiro a responder o quiz da Luísa!</p>
+                ${responseData.note ? `<p style="font-size: 0.9em; color: #666;">${responseData.note}</p>` : ''}
               </div>
             `;
             return;
           }
 
           // Ordenar por data (mais recente primeiro)
-          data.sort((a, b) => new Date(b.data) - new Date(a.data));
+          data.sort((a, b) => new Date(b.timestamp || b.data) - new Date(a.timestamp || a.data));
 
           container.innerHTML = data.map((resultado, index) => {
             const porcentagem = Math.round((resultado.pontuacao / resultado.total) * 100);
@@ -150,15 +157,17 @@
               <p><strong>Total de participantes:</strong> ${totalParticipantes}</p>
               <p><strong>Média de acertos:</strong> ${mediaAcertos.toFixed(1)} perguntas</p>
               <p><strong>Melhor pontuação:</strong> ${melhorPontuacao}/${data[0]?.total || 5} perguntas</p>
+              ${responseData.note ? `<p style="font-size: 0.9em; color: #666; margin-top: 10px;">${responseData.note}</p>` : ''}
             </div>
           `;
         })
         .catch(error => {
-          console.error('Erro ao carregar resultados:', error);
+          console.error('Erro detalhado:', error);
           container.innerHTML = `
             <div class="error">
               <h3>❌ Erro ao carregar resultados</h3>
-              <p>Não foi possível carregar os resultados. Tente novamente.</p>
+              <p>Detalhes: ${error.message}</p>
+              <p>Verifique o console do navegador para mais informações.</p>
             </div>
           `;
         });
