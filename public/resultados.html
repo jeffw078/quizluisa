@@ -104,12 +104,12 @@
           return res.json();
         })
         .then(responseData => {
-          console.log('Dados recebidos:', responseData);
+          console.log('Dados recebidos da API:', responseData);
           
           // Verificar se a resposta tem o formato correto
           const data = responseData.data || responseData;
           
-          if (!data || data.length === 0) {
+          if (!data || !Array.isArray(data) || data.length === 0) {
             container.innerHTML = `
               <div class="empty">
                 <h3>🎈 Ainda não há respostas!</h3>
@@ -120,11 +120,21 @@
             return;
           }
 
+          console.log('Processando', data.length, 'resultados');
+
           // Ordenar por data (mais recente primeiro)
-          data.sort((a, b) => new Date(b.timestamp || b.data) - new Date(a.timestamp || a.data));
+          data.sort((a, b) => {
+            const dateA = new Date(b.timestamp || b.data || 0);
+            const dateB = new Date(a.timestamp || a.data || 0);
+            return dateA - dateB;
+          });
 
           container.innerHTML = data.map((resultado, index) => {
-            const porcentagem = Math.round((resultado.pontuacao / resultado.total) * 100);
+            // Garantir que pontuacao e total são números
+            const pontuacao = parseInt(resultado.pontuacao) || 0;
+            const total = parseInt(resultado.total) || 5;
+            const porcentagem = total > 0 ? Math.round((pontuacao / total) * 100) : 0;
+            
             let emoji = "🎉";
             if (porcentagem >= 80) emoji = "🌟";
             else if (porcentagem >= 60) emoji = "👏";
@@ -132,25 +142,35 @@
             
             return `
               <div class="resultado-item">
-                <h3>${emoji} ${resultado.nome}</h3>
+                <h3>${emoji} ${resultado.nome || 'Anônimo'}</h3>
                 <div class="pontuacao">
-                  ${resultado.pontuacao}/${resultado.total} perguntas corretas (${porcentagem}%)
+                  ${pontuacao}/${total} perguntas corretas (${porcentagem}%)
                 </div>
                 ${resultado.mensagem ? `
                   <div class="mensagem">
                     "${resultado.mensagem}"
                   </div>
                 ` : ''}
-                <div class="data">📅 ${resultado.data}</div>
+                <div class="data">📅 ${resultado.data || 'Data não informada'}</div>
               </div>
             `;
           }).join('');
           
-          // Adicionar estatísticas melhoradas
+          // Adicionar estatísticas melhoradas (com tratamento de tipos)
           const stats = responseData.statistics || {};
-          const totalParticipantes = stats.total_participantes || data.length;
-          const mediaAcertos = stats.media_acertos || (data.reduce((sum, r) => sum + r.pontuacao, 0) / totalParticipantes);
-          const melhorPontuacao = stats.melhor_pontuacao || Math.max(...data.map(r => r.pontuacao));
+          const totalParticipantes = parseInt(stats.total_participantes) || data.length;
+          
+          // Calcular média com tratamento seguro
+          let mediaAcertos = 0;
+          if (stats.media_acertos !== undefined) {
+            mediaAcertos = parseFloat(stats.media_acertos) || 0;
+          } else if (data.length > 0) {
+            const soma = data.reduce((sum, r) => sum + (parseInt(r.pontuacao) || 0), 0);
+            mediaAcertos = totalParticipantes > 0 ? soma / totalParticipantes : 0;
+          }
+          
+          const melhorPontuacao = parseInt(stats.melhor_pontuacao) || 
+                                 (data.length > 0 ? Math.max(...data.map(r => parseInt(r.pontuacao) || 0)) : 0);
           
           container.innerHTML += `
             <div class="resultado-item" style="background-color: #f8f9ff; border-color: #c5d0ff;">
@@ -158,7 +178,7 @@
               <p><strong>Total de participantes:</strong> ${totalParticipantes}</p>
               <p><strong>Média de acertos:</strong> ${mediaAcertos.toFixed(1)} perguntas</p>
               <p><strong>Melhor pontuação:</strong> ${melhorPontuacao}/${data[0]?.total || 5} perguntas</p>
-              ${stats.dias_ativos ? `<p><strong>Dias com atividade:</strong> ${stats.dias_ativos}</p>` : ''}
+              ${stats.dias_ativos ? `<p><strong>Dias com atividade:</strong> ${parseInt(stats.dias_ativos)}</p>` : ''}
               <p><strong>Fonte:</strong> ${responseData.source || 'Banco de dados'}</p>
               ${responseData.note ? `<p style="font-size: 0.9em; color: #666; margin-top: 10px;">${responseData.note}</p>` : ''}
               ${responseData.warning ? `<p style="font-size: 0.9em; color: #ff6600; margin-top: 10px;">⚠️ ${responseData.warning}</p>` : ''}
@@ -172,6 +192,7 @@
               <h3>❌ Erro ao carregar resultados</h3>
               <p>Detalhes: ${error.message}</p>
               <p>Verifique o console do navegador para mais informações.</p>
+              <button onclick="carregarResultados()" style="margin-top: 10px; padding: 10px 15px; background: #ff99cc; border: none; border-radius: 5px; color: white; cursor: pointer;">🔄 Tentar Novamente</button>
             </div>
           `;
         });
