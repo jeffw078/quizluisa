@@ -53,7 +53,7 @@
     <div id="quiz-container">
       <div class="loading">Carregando perguntas...</div>
     </div>
-    <!-- Botão próxima removido - avanço automático -->
+    <button id="next-button" disabled>Próxima</button>
   </main>
   <footer>
     <p>Com carinho para a Luísa 💖</p>
@@ -93,14 +93,13 @@ function perguntarNome() {
     <p class="intro-msg">Você será convidado para o aniversário de 1 aninho da Luísa, mas para isso, primeiro, você deverá responder esse Quiz! Preparado?!</p>
     <div class="question">Qual o seu nome?</div>
     <input type="text" id="nomeInput" placeholder="Seu nome..." maxlength="50">
-    <br><br>
-    <button id="startBtn">Começar Quiz!</button>
   `;
   
+  const nextBtn = document.getElementById('next-button');
   const input = document.getElementById('nomeInput');
-  const startBtn = document.getElementById('startBtn');
   
-  startBtn.onclick = () => {
+  nextBtn.disabled = false;
+  nextBtn.onclick = () => {
     if (input.value.trim() !== "") {
       nomeConvidado = input.value.trim();
       showQuestion();
@@ -129,7 +128,7 @@ function showQuestion() {
     ${q.respostas.map((r, i) => `<button class="answer" data-index="${i}">${r}</button>`).join('')}
   `;
 
-  nextBtn.style.display = "none"; // Esconder botão "Próxima"
+  nextBtn.disabled = true;
 
   document.querySelectorAll('.answer').forEach(btn => {
     btn.addEventListener('click', e => {
@@ -144,20 +143,19 @@ function showQuestion() {
         document.querySelectorAll('.answer')[q.correta].classList.add('correct');
       }
       
-      // Desabilitar todos os botões
       document.querySelectorAll('.answer').forEach(b => b.disabled = true);
-      
-      // Avançar automaticamente após um breve delay
-      setTimeout(() => {
-        currentQuestion++;
-        if (currentQuestion < questions.length) {
-          showQuestion();
-        } else {
-          mostrarMensagemFinal();
-        }
-      }, 1200); // 1.2 segundos para mostrar a resposta correta
+      nextBtn.disabled = false;
     });
   });
+
+  nextBtn.onclick = () => {
+    currentQuestion++;
+    if (currentQuestion < questions.length) {
+      showQuestion();
+    } else {
+      mostrarMensagemFinal();
+    }
+  };
 }
 
 function mostrarMensagemFinal() {
@@ -242,7 +240,7 @@ function mostrarMensagemFinal() {
 }
   </script>
   
-  <!-- <div style="text-align: center; margin: 30px;">
+  <div style="text-align: center; margin: 30px;">
     <a href="jogo.html" style="color: #ff6b9d; text-decoration: none; font-size: 1.2em; background: #fff8fc; padding: 15px 25px; border-radius: 20px; border: 2px solid #ffd6e8; display: inline-block; margin: 10px; transition: all 0.3s ease;">
       🌪️ Jogar Mini-Game da Luísa!
     </a>
@@ -250,6 +248,6 @@ function mostrarMensagemFinal() {
     <a href="resultados.html" style="color: #ff6b9d; text-decoration: none; font-size: 1.1em;">
       📊 Ver Resultados do Quiz
     </a>
-  </div> -->
+  </div>
 </body>
 </html>
