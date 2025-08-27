@@ -1,4 +1,10 @@
 {
+  "rewrites": [
+    {
+      "source": "/questions.json",
+      "destination": "/questions.json"
+    }
+  ],
   "functions": {
     "api/salvar.js": {
       "maxDuration": 10
