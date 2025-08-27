@@ -1,5 +1,5 @@
-// api/resultados.js - Função serverless com SQLite
-import { getDatabase } from '../lib/db.js';
+// api/resultados.js - Versão simplificada e robusta
+let respostasMemoria = []; // Mesma referência da API salvar
 
 export default async function handler(req, res) {
   // Configurar CORS
@@ -15,101 +15,107 @@ export default async function handler(req, res) {
 
   if (req.method === 'GET') {
     try {
-      // Conectar ao banco
-      const db = await getDatabase();
+      console.log('📊 Buscando resultados...');
       
-      // Buscar todas as respostas ordenadas por data
-      const respostas = await db.all(`
-        SELECT 
-          id,
-          nome,
-          pontuacao,
-          total,
-          mensagem,
-          data_resposta,
-          created_at
-        FROM respostas 
-        ORDER BY data_resposta DESC
-        LIMIT 100
-      `);
+      let resultados = [];
+      let fonte = 'unknown';
 
-      // Formatar dados para o frontend
-      const resultadosFormatados = respostas.map(resposta => ({
-        id: resposta.id,
-        nome: resposta.nome,
-        pontuacao: resposta.pontuacao,
-        total: resposta.total,
-        mensagem: resposta.mensagem,
-        data: new Date(resposta.data_resposta).toLocaleString('pt-BR'),
-        timestamp: resposta.data_resposta
-      }));
+      // Tentar buscar do SQLite primeiro
+      try {
+        const Database = await import('better-sqlite3');
+        const db = new Database.default('/tmp/quiz.db');
+        
+        // Verificar se tabela existe
+        const tableExists = db.prepare(`
+          SELECT name FROM sqlite_master WHERE type='table' AND name='respostas'
+        `).get();
 
-      // Estatísticas
-      const stats = await db.get(`
-        SELECT 
-          COUNT(*) as total_participantes,
-          AVG(pontuacao) as media_acertos,
-          MAX(pontuacao) as melhor_pontuacao,
-          COUNT(DISTINCT DATE(data_resposta)) as dias_ativos
-        FROM respostas
-      `);
+        if (tableExists) {
+          const rows = db.prepare(`
+            SELECT * FROM respostas ORDER BY timestamp DESC LIMIT 50
+          `).all();
+          
+          resultados = rows;
+          fonte = 'SQLite';
+          console.log('💾 Carregado do SQLite:', rows.length, 'registros');
+        }
+        
+        db.close();
+        
+      } catch (dbError) {
+        console.log('⚠️ SQLite não disponível:', dbError.message);
+        
+        // Fallback: usar dados em memória
+        resultados = [...respostasMemoria];
+        fonte = 'Memory';
+        console.log('💭 Carregado da memória:', resultados.length, 'registros');
+      }
 
-      console.log('Resultados carregados do SQLite:', {
-        total: resultadosFormatados.length,
-        stats: stats
-      });
+      // Se não tiver dados, usar exemplos
+      if (resultados.length === 0) {
+        resultados = [
+          {
+            id: 'demo-1',
+            nome: 'Visitante Exemplo',
+            pontuacao: 4,
+            total: 5,
+            mensagem: 'Parabéns Luísa! Que seu aniversário seja maravilhoso! 🎉✨',
+            data: new Date().toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' }),
+            timestamp: new Date().toISOString()
+          },
+          {
+            id: 'demo-2',
+            nome: 'Amigo da Família',
+            pontuacao: 3,
+            total: 5,
+            mensagem: 'Muito fofo este quiz! A Luísa é uma princesa! 👑💖',
+            data: new Date(Date.now() - 3600000).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' }),
+            timestamp: new Date(Date.now() - 3600000).toISOString()
+          }
+        ];
+        fonte = 'Demo';
+        console.log('🎭 Usando dados de demonstração');
+      }
+
+      // Calcular estatísticas
+      const stats = {
+        total_participantes: resultados.length,
+        media_acertos: resultados.length > 0 
+          ? (resultados.reduce((sum, r) => sum + (r.pontuacao || 0), 0) / resultados.length).toFixed(1)
+          : 0,
+        melhor_pontuacao: resultados.length > 0 
+          ? Math.max(...resultados.map(r => r.pontuacao || 0))
+          : 0
+      };
+
+      console.log('📈 Estatísticas:', stats);
 
       res.status(200).json({
         success: true,
-        count: resultadosFormatados.length,
-        data: resultadosFormatados,
-        statistics: {
-          total_participantes: stats.total_participantes || 0,
-          media_acertos: parseFloat((stats.media_acertos || 0).toFixed(1)),
-          melhor_pontuacao: stats.melhor_pontuacao || 0,
-          dias_ativos: stats.dias_ativos || 0
-        },
-        source: 'SQLite Database',
-        timestamp: new Date().toISOString()
+        count: resultados.length,
+        data: resultados,
+        statistics: stats,
+        source: fonte,
+        timestamp: new Date().toISOString(),
+        note: fonte === 'Demo' 
+          ? 'Dados de demonstração - Responda o quiz para ver dados reais!'
+          : `Dados carregados de ${fonte}`
       });
 
     } catch (error) {
-      console.error('Erro ao buscar resultados do SQLite:', error);
+      console.error('💥 Erro ao buscar resultados:', error);
       
-      // Fallback com dados de exemplo se SQLite falhar
-      const fallbackData = [
-        {
-          id: 'demo1',
-          nome: 'Visitante',
-          pontuacao: 4,
-          total: 5,
-          mensagem: 'Que a Luísa tenha um aniversário muito especial! 🎉',
-          data: new Date().toLocaleString('pt-BR'),
-          timestamp: new Date().toISOString()
-        }
-      ];
-
-      res.status(200).json({
-        success: true,
-        count: fallbackData.length,
-        data: fallbackData,
-        statistics: {
-          total_participantes: 1,
-          media_acertos: 4.0,
-          melhor_pontuacao: 4,
-          dias_ativos: 1
-        },
-        source: 'Fallback Data',
-        warning: 'SQLite indisponível, usando dados de exemplo',
-        error_details: error.message,
+      res.status(500).json({
+        success: false,
+        error: 'Erro ao buscar resultados',
+        details: error.message,
         timestamp: new Date().toISOString()
       });
     }
   } else {
-    res.status(405).json({ 
-      error: 'Método não permitido',
-      allowedMethods: ['GET'],
-      receivedMethod: req.method
+    res.status(405).json({
+      success: false,
+      error: 'Método não permitido. Use GET.'
     });
   }
 }

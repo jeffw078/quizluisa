@@ -2,6 +2,7 @@
   "name": "quiz-luisa",
   "version": "1.0.0",
   "description": "Quiz de aniversário da Luísa",
+  "type": "module",
   "main": "api/salvar.js",
   "scripts": {
     "dev": "vercel dev",
@@ -9,8 +10,7 @@
     "start": "vercel --prod"
   },
   "dependencies": {
-    "sqlite3": "^5.1.6",
-    "sqlite": "^5.0.1"
+    "better-sqlite3": "^9.1.1"
   },
   "devDependencies": {},
   "engines": {
