@@ -6,12 +6,15 @@
       "dest": "/api/$1"
     },
     {
-      "src": "/(.*\\.(html|css|js|json|png|jpg|gif|ico))",
+      "src": "/(.*\\.(html|css|js|json|png|jpg|gif|ico|svg))",
       "dest": "/public/$1"
     },
     {
       "src": "/",
       "dest": "/public/index.html"
     }
-  ]
+  ],
+  "env": {
+    "NODE_ENV": "production"
+  }
 }

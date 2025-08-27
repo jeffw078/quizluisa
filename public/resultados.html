@@ -146,10 +146,11 @@
             `;
           }).join('');
           
-          // Adicionar estatísticas
-          const totalParticipantes = data.length;
-          const mediaAcertos = data.reduce((sum, r) => sum + r.pontuacao, 0) / totalParticipantes;
-          const melhorPontuacao = Math.max(...data.map(r => r.pontuacao));
+          // Adicionar estatísticas melhoradas
+          const stats = responseData.statistics || {};
+          const totalParticipantes = stats.total_participantes || data.length;
+          const mediaAcertos = stats.media_acertos || (data.reduce((sum, r) => sum + r.pontuacao, 0) / totalParticipantes);
+          const melhorPontuacao = stats.melhor_pontuacao || Math.max(...data.map(r => r.pontuacao));
           
           container.innerHTML += `
             <div class="resultado-item" style="background-color: #f8f9ff; border-color: #c5d0ff;">
@@ -157,7 +158,10 @@
               <p><strong>Total de participantes:</strong> ${totalParticipantes}</p>
               <p><strong>Média de acertos:</strong> ${mediaAcertos.toFixed(1)} perguntas</p>
               <p><strong>Melhor pontuação:</strong> ${melhorPontuacao}/${data[0]?.total || 5} perguntas</p>
+              ${stats.dias_ativos ? `<p><strong>Dias com atividade:</strong> ${stats.dias_ativos}</p>` : ''}
+              <p><strong>Fonte:</strong> ${responseData.source || 'Banco de dados'}</p>
               ${responseData.note ? `<p style="font-size: 0.9em; color: #666; margin-top: 10px;">${responseData.note}</p>` : ''}
+              ${responseData.warning ? `<p style="font-size: 0.9em; color: #ff6600; margin-top: 10px;">⚠️ ${responseData.warning}</p>` : ''}
             </div>
           `;
         })
