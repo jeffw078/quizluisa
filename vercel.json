@@ -1,20 +1,27 @@
 {
   "version": 2,
+  "builds": [
+    {
+      "src": "api/**/*.js",
+      "use": "@vercel/node"
+    }
+  ],
   "routes": [
     {
       "src": "/api/(.*)",
       "dest": "/api/$1"
     },
     {
-      "src": "/(.*\\.(html|css|js|json|png|jpg|gif|ico|svg))",
-      "dest": "/public/$1"
-    },
-    {
-      "src": "/",
-      "dest": "/public/index.html"
+      "src": "/(.*)",
+      "dest": "/$1"
     }
   ],
-  "env": {
-    "NODE_ENV": "production"
+  "functions": {
+    "api/salvar.js": {
+      "maxDuration": 10
+    },
+    "api/resultados.js": {
+      "maxDuration": 10
+    }
   }
 }

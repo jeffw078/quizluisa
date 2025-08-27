@@ -1,19 +1,26 @@
 {
-  "name": "quiz-luisa",
+  "name": "quiz-luisa-aniversario",
   "version": "1.0.0",
-  "description": "Quiz de aniversário da Luísa",
+  "description": "Quiz interativo para o aniversário de 1 ano da Luísa",
   "type": "module",
-  "main": "api/salvar.js",
+  "main": "index.js",
   "scripts": {
     "dev": "vercel dev",
-    "build": "echo 'Build complete'",
+    "build": "echo 'Build complete - static files ready'",
     "start": "vercel --prod"
   },
-  "dependencies": {
-    "better-sqlite3": "^9.1.1"
-  },
+  "dependencies": {},
   "devDependencies": {},
   "engines": {
     "node": "18.x"
-  }
+  },
+  "keywords": [
+    "quiz",
+    "aniversario",
+    "luisa",
+    "cata-vento",
+    "vercel"
+  ],
+  "author": "Quiz da Luísa",
+  "license": "MIT"
 }

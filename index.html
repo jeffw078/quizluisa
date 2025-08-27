@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quiz da Luísa - Aniversário de 1 Ano 🎉</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Comic Sans MS', cursive, sans-serif;
+      background: linear-gradient(135deg, #ffeef8 0%, #e8f5ff 50%, #f0fff4 100%);
+      min-height: 100vh;
+      padding: 20px;
+      color: #333;
+    }
+
+    .container {
+      max-width: 400px;
+      margin: 0 auto;
+      background: rgba(255, 255, 255, 0.9);
+      border-radius: 25px;
+      box-shadow: 0 20px 40px rgba(255, 182, 193, 0.3);
+      overflow: hidden;
+      border: 3px solid #ffd6e8;
+    }
+
+    .header {
+      background: linear-gradient(45deg, #ff9bd2, #c589e8, #85c7f2, #7de5b8);
+      padding: 30px 20px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .header::before {
+      content: "";
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: repeating-conic-gradient(from 0deg at 50% 50%, transparent 0deg, rgba(255,255,255,0.1) 10deg, transparent 20deg);
+      animation: spin 20s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .header h1 {
+      font-size: 2em;
+      color: white;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+      margin-bottom: 10px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .header .subtitle {
+      color: #fff;
+      font-size: 1.1em;
+      position: relative;
+      z-index: 1;
+    }
+
+    .pinwheel {
+      font-size: 3em;
+      margin: 15px 0;
+      display: inline-block;
+      animation: rotate 3s linear infinite;
+    }
+
+    @keyframes rotate {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .content {
+      padding: 30px 25px;
+    }
+
+    .welcome-message {
+      text-align: center;
+      margin-bottom: 30px;
+      font-size: 1.1em;
+      line-height: 1.6;
+      color: #666;
+    }
+
+    .name-input {
+      width: 100%;
+      padding: 15px;
+      border: 3px solid #ffd6e8;
+      border-radius: 15px;
+      font-size: 1.1em;
+      margin-bottom: 20px;
+      text-align: center;
+      font-family: inherit;
+      background: #fff8fc;
+      transition: all 0.3s ease;
+    }
+
+    .name-input:focus {
+      outline: none;
+      border-color: #ff9bd2;
+      box-shadow: 0 0 15px rgba(255, 155, 210, 0.3);
+    }
+
+    .question-container {
+      background: #fff8fc;
+      border: 2px solid #ffd6e8;
+      border-radius: 20px;
+      padding: 25px;
+      margin-bottom: 25px;
+      text-align: center;
+    }
+
+    .question-number {
+      color: #ff6b9d;
+      font-weight: bold;
+      margin-bottom: 15px;
+      font-size: 1em;
+    }
+
+    .question-text {
+      font-size: 1.3em;
+      color: #333;
+      margin-bottom: 25px;
+      line-height: 1.4;
+    }
+
+    .answers {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .answer-btn {
+      padding: 15px 20px;
+      border: 3px solid #ffd6e8;
+      border-radius: 15px;
+      background: white;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 1.1em;
+      font-family: inherit;
+      color: #333;
+    }
+
+    .answer-btn:hover {
+      background: #fff8fc;
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(255, 182, 193, 0.4);
+    }
+
+    .answer-btn.correct {
+      background: linear-gradient(45deg, #90EE90, #98FB98) !important;
+      border-color: #7de5b8 !important;
+      color: #2d5a3d !important;
+      font-weight: bold;
+    }
+
+    .answer-btn.incorrect {
+      background: linear-gradient(45deg, #FFB6C1, #FFC0CB) !important;
+      border-color: #ff9bd2 !important;
+      color: #8B4B6B !important;
+      opacity: 0.7;
+    }
+
+    .answer-btn:disabled {
+      cursor: not-allowed;
+    }
+
+    .btn {
+      width: 100%;
+      padding: 18px 25px;
+      background: linear-gradient(45deg, #ff9bd2, #c589e8);
+      color: white;
+      border: none;
+      border-radius: 20px;
+      font-size: 1.2em;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-family: inherit;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 25px rgba(255, 155, 210, 0.4);
+    }
+
+    .btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .result-container {
+      text-align: center;
+      background: #fff8fc;
+      border: 3px solid #ffd6e8;
+      border-radius: 20px;
+      padding: 30px 25px;
+      margin-bottom: 25px;
+    }
+
+    .result-title {
+      font-size: 1.8em;
+      color: #ff6b9d;
+      margin-bottom: 20px;
+    }
+
+    .score-display {
+      font-size: 2.5em;
+      margin: 20px 0;
+    }
+
+    .result-message {
+      font-size: 1.2em;
+      color: #666;
+      margin-bottom: 25px;
+      line-height: 1.5;
+    }
+
+    .message-input {
+      width: 100%;
+      min-height: 100px;
+      padding: 15px;
+      border: 3px solid #ffd6e8;
+      border-radius: 15px;
+      font-size: 1.1em;
+      font-family: inherit;
+      background: #fff8fc;
+      resize: vertical;
+      margin-bottom: 20px;
+    }
+
+    .message-input:focus {
+      outline: none;
+      border-color: #ff9bd2;
+      box-shadow: 0 0 15px rgba(255, 155, 210, 0.3);
+    }
+
+    .status-message {
+      margin-top: 15px;
+      padding: 10px;
+      border-radius: 10px;
+      font-weight: bold;
+    }
+
+    .status-success {
+      background: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+
+    .status-error {
+      background: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+    }
+
+    .status-loading {
+      background: #fff3cd;
+      color: #856404;
+      border: 1px solid #ffeaa7;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    @media (max-width: 480px) {
+      body {
+        padding: 10px;
+      }
+      
+      .container {
+        border-radius: 20px;
+      }
+      
+      .header {
+        padding: 25px 15px;
+      }
+      
+      .content {
+        padding: 25px 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header class="header">
+      <div class="pinwheel">🌪️</div>
+      <h1>Quiz da Luísa</h1>
+      <div class="subtitle">Aniversário de 1 Ano!</div>
+    </header>
+
+    <main class="content">
+      <div id="welcome-screen">
+        <div class="welcome-message">
+          <p>Você foi convidado para o aniversário de 1 ano da Luísa! 🎉</p>
+          <p>Para confirmar sua presença, responda o quiz abaixo.</p>
+        </div>
+        <button class="btn" onclick="startQuiz()">Começar Quiz! 🌟</button>
+      </div>
+
+      <div id="name-screen" class="hidden">
+        <div class="welcome-message">
+          <p>Antes de começarmos, qual é o seu nome?</p>
+        </div>
+        <input type="text" id="playerName" class="name-input" placeholder="Digite seu nome aqui..." maxlength="50">
+        <button class="btn" onclick="submitName()">Continuar</button>
+      </div>
+
+      <div id="quiz-screen" class="hidden">
+        <div class="question-container">
+          <div class="question-number" id="questionNumber"></div>
+          <div class="question-text" id="questionText"></div>
+          <div class="answers" id="answersContainer"></div>
+        </div>
+        <button class="btn" id="nextBtn" onclick="nextQuestion()" disabled>Próxima Pergunta</button>
+      </div>
+
+      <div id="result-screen" class="hidden">
+        <div class="result-container">
+          <div class="result-title">Parabéns! 🎉</div>
+          <div class="score-display" id="finalScore"></div>
+          <div class="result-message" id="resultMessage"></div>
+          
+          <p style="margin-bottom: 15px; color: #666;">Deixe uma mensagem carinhosa para a Luísa ler no futuro:</p>
+          <textarea id="userMessage" class="message-input" placeholder="Escreva algo especial para a Luísa..."></textarea>
+          
+          <button class="btn" onclick="submitMessage()">Enviar Mensagem 💝</button>
+          <div id="submitStatus"></div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    let currentQuestion = 0;
+    let questions = [];
+    let playerName = '';
+    let score = 0;
+    let selectedAnswer = null;
+
+    // Carregar perguntas do JSON
+    async function loadQuestions() {
+      try {
+        const response = await fetch('/questions.json');
+        questions = await response.json();
+      } catch (error) {
+        console.error('Erro ao carregar perguntas:', error);
+        alert('Erro ao carregar o quiz. Tente recarregar a página.');
+      }
+    }
+
+    function startQuiz() {
+      document.getElementById('welcome-screen').classList.add('hidden');
+      document.getElementById('name-screen').classList.remove('hidden');
+    }
+
+    function submitName() {
+      const nameInput = document.getElementById('playerName');
+      if (nameInput.value.trim()) {
+        playerName = nameInput.value.trim();
+        document.getElementById('name-screen').classList.add('hidden');
+        document.getElementById('quiz-screen').classList.remove('hidden');
+        loadQuestions().then(() => {
+          showQuestion();
+        });
+      } else {
+        alert('Por favor, digite seu nome!');
+      }
+    }
+
+    function showQuestion() {
+      if (currentQuestion >= questions.length) {
+        showResults();
+        return;
+      }
+
+      const question = questions[currentQuestion];
+      document.getElementById('questionNumber').textContent = `Pergunta ${currentQuestion + 1} de ${questions.length}`;
+      document.getElementById('questionText').textContent = question.pergunta;
+      
+      const answersContainer = document.getElementById('answersContainer');
+      answersContainer.innerHTML = '';
+      selectedAnswer = null;
+      document.getElementById('nextBtn').disabled = true;
+
+      question.respostas.forEach((answer, index) => {
+        const button = document.createElement('button');
+        button.className = 'answer-btn';
+        button.textContent = answer;
+        button.onclick = () => selectAnswer(index, button);
+        answersContainer.appendChild(button);
+      });
+    }
+
+    function selectAnswer(answerIndex, buttonElement) {
+      if (selectedAnswer !== null) return;
+      
+      selectedAnswer = answerIndex;
+      const question = questions[currentQuestion];
+      const isCorrect = answerIndex === question.correta;
+      
+      if (isCorrect) {
+        score++;
+        buttonElement.classList.add('correct');
+      } else {
+        buttonElement.classList.add('incorrect');
+        // Mostrar resposta correta
+        const correctBtn = document.querySelectorAll('.answer-btn')[question.correta];
+        correctBtn.classList.add('correct');
+      }
+
+      // Desabilitar todos os botões
+      document.querySelectorAll('.answer-btn').forEach(btn => {
+        btn.disabled = true;
+      });
+
+      document.getElementById('nextBtn').disabled = false;
+    }
+
+    function nextQuestion() {
+      currentQuestion++;
+      setTimeout(showQuestion, 500);
+    }
+
+    function showResults() {
+      document.getElementById('quiz-screen').classList.add('hidden');
+      document.getElementById('result-screen').classList.remove('hidden');
+      
+      const percentage = Math.round((score / questions.length) * 100);
+      document.getElementById('finalScore').textContent = `${score}/${questions.length} (${percentage}%)`;
+      
+      let message = '';
+      if (percentage >= 80) {
+        message = '🌟 Excelente! Você conhece muito bem a Luísa!';
+      } else if (percentage >= 60) {
+        message = '👏 Muito bom! Você sabe bastante sobre a Luísa!';
+      } else {
+        message = '💝 Legal! Agora você conhece mais sobre a Luísa!';
+      }
+      
+      document.getElementById('resultMessage').textContent = message;
+    }
+
+    async function submitMessage() {
+      const messageText = document.getElementById('userMessage').value.trim();
+      if (!messageText) {
+        alert('Por favor, escreva uma mensagem para a Luísa!');
+        return;
+      }
+
+      const submitButton = document.querySelector('#result-screen .btn');
+      const statusDiv = document.getElementById('submitStatus');
+      
+      submitButton.disabled = true;
+      submitButton.textContent = 'Enviando...';
+      statusDiv.innerHTML = '<div class="status-message status-loading">Salvando sua mensagem...</div>';
+
+      try {
+        const response = await fetch('/api/salvar', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            nome: playerName,
+            pontuacao: score,
+            total: questions.length,
+            mensagem: messageText,
+            data: new Date().toLocaleString('pt-BR')
+          })
+        });
+
+        if (response.ok) {
+          statusDiv.innerHTML = '<div class="status-message status-success">✅ Mensagem salva com sucesso!</div>';
+          
+          // Enviar para WhatsApp após 2 segundos
+          setTimeout(() => {
+            const whatsappMsg = encodeURIComponent(`Olá! Acabei de responder o Quiz da Luísa! Acertei ${score} de ${questions.length} perguntas. Quero o convite para o aniversário! 🎉`);
+            window.open(`https://wa.me/5547988253536?text=${whatsappMsg}`, '_blank');
+          }, 2000);
+          
+        } else {
+          throw new Error('Erro ao salvar');
+        }
+      } catch (error) {
+        console.error('Erro:', error);
+        statusDiv.innerHTML = '<div class="status-message status-error">❌ Erro ao salvar. Tente novamente.</div>';
+        submitButton.disabled = false;
+        submitButton.textContent = 'Tentar Novamente';
+      }
+    }
+
+    // Permitir Enter no campo de nome
+    document.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('playerName').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+          submitName();
+        }
+      });
+    });
+  </script>
+</body>
+</html>

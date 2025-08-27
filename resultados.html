@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mensagens para a Luísa 💝</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Comic Sans MS', cursive, sans-serif;
+      background: linear-gradient(135deg, #ffeef8 0%, #e8f5ff 50%, #f0fff4 100%);
+      min-height: 100vh;
+      padding: 20px;
+      color: #333;
+    }
+
+    .container {
+      max-width: 450px;
+      margin: 0 auto;
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 25px;
+      box-shadow: 0 20px 40px rgba(255, 182, 193, 0.3);
+      overflow: hidden;
+      border: 3px solid #ffd6e8;
+    }
+
+    .header {
+      background: linear-gradient(45deg, #ff9bd2, #c589e8, #85c7f2, #7de5b8);
+      padding: 30px 20px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .header::before {
+      content: "";
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: repeating-conic-gradient(from 0deg at 50% 50%, transparent 0deg, rgba(255,255,255,0.1) 10deg, transparent 20deg);
+      animation: spin 20s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .header h1 {
+      font-size: 1.8em;
+      color: white;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+      margin-bottom: 10px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .header .subtitle {
+      color: #fff;
+      font-size: 1em;
+      position: relative;
+      z-index: 1;
+    }
+
+    .pinwheel {
+      font-size: 2.5em;
+      margin: 10px 0;
+      display: inline-block;
+      animation: rotate 3s linear infinite;
+    }
+
+    @keyframes rotate {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .content {
+      padding: 25px;
+    }
+
+    .message-card {
+      background: linear-gradient(135deg, #fff8fc 0%, #f0fff4 100%);
+      border: 3px solid #ffd6e8;
+      border-radius: 20px;
+      padding: 25px;
+      margin-bottom: 20px;
+      box-shadow: 0 8px 25px rgba(255, 182, 193, 0.2);
+      position: relative;
+      transition: all 0.3s ease;
+    }
+
+    .message-card::before {
+      content: "💝";
+      position: absolute;
+      top: -10px;
+      right: -10px;
+      background: #ff9bd2;
+      color: white;
+      border-radius: 50%;
+      width: 35px;
+      height: 35px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2em;
+      box-shadow: 0 4px 15px rgba(255, 155, 210, 0.4);
+    }
+
+    .message-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .sender-name {
+      font-size: 1.4em;
+      font-weight: bold;
+      color: #ff6b9d;
+    }
+
+    .message-date {
+      font-size: 0.9em;
+      color: #888;
+    }
+
+    .message-text {
+      font-size: 1.1em;
+      line-height: 1.6;
+      color: #333;
+      margin-bottom: 15px;
+      background: rgba(255, 255, 255, 0.7);
+      padding: 15px;
+      border-radius: 12px;
+      border-left: 4px solid #ff9bd2;
+    }
+
+    .message-score {
+      font-size: 0.85em;
+      color: #666;
+      text-align: right;
+      opacity: 0.7;
+    }
+
+    .navigation {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin: 25px 0;
+      padding: 20px;
+      background: rgba(255, 255, 255, 0.8);
+      border-radius: 15px;
+      border: 2px solid #ffd6e8;
+    }
+
+    .nav-button {
+      background: linear-gradient(45deg, #ff9bd2, #c589e8);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      padding: 12px 20px;
+      font-size: 1em;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-family: inherit;
+    }
+
+    .nav-button:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(255, 155, 210, 0.4);
+    }
+
+    .nav-button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .counter {
+      font-size: 1.1em;
+      color: #ff6b9d;
+      font-weight: bold;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 50px;
+      font-size: 1.2em;
+      color: #666;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 50px 25px;
+      color: #666;
+    }
+
+    .empty-state .emoji {
+      font-size: 4em;
+      margin-bottom: 20px;
+    }
+
+    .back-button {
+      display: block;
+      margin: 25px auto;
+      padding: 15px 30px;
+      background: linear-gradient(45deg, #7de5b8, #85c7f2);
+      color: white;
+      border: none;
+      border-radius: 15px;
+      font-size: 1.1em;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-family: inherit;
+      text-decoration: none;
+      text-align: center;
+    }
+
+    .back-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(125, 229, 184, 0.4);
+    }
+
+    .error-message {
+      background: #ffe6e6;
+      border: 2px solid #ff9999;
+      border-radius: 15px;
+      padding: 20px;
+      margin: 20px 0;
+      color: #cc0000;
+      text-align: center;
+    }
+
+    @media (max-width: 480px) {
+      body {
+        padding: 10px;
+      }
+      
+      .container {
+        border-radius: 20px;
+      }
+      
+      .header {
+        padding: 25px 15px;
+      }
+      
+      .content {
+        padding: 20px;
+      }
+
+      .message-header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      
+      .navigation {
+        padding: 15px;
+      }
+      
+      .nav-button {
+        padding: 10px 15px;
+        font-size: 0.9em;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header class="header">
+      <div class="pinwheel">🌪️</div>
+      <h1>Mensagens para a Luísa</h1>
+      <div class="subtitle">Recadinhos do coração 💝</div>
+    </header>
+
+    <main class="content">
+      <div id="loading" class="loading">
+        Carregando mensagens... 🌟
+      </div>
+
+      <div id="empty-state" class="empty-state" style="display: none;">
+        <div class="emoji">🎈</div>
+        <h3>Ainda não há mensagens!</h3>
+        <p>Seja o primeiro a deixar um recadinho para a Luísa!</p>
+      </div>
+
+      <div id="error-state" class="error-message" style="display: none;">
+        <h3>❌ Erro ao carregar</h3>
+        <p>Não foi possível carregar as mensagens. Tente recarregar a página.</p>
+      </div>
+
+      <div id="messages-container" style="display: none;">
+        <div id="current-message"></div>
+        
+        <div class="navigation">
+          <button class="nav-button" id="prevBtn" onclick="previousMessage()">
+            ← Anterior
+          </button>
+          
+          <div class="counter" id="messageCounter">
+            1 de 1
+          </div>
+          
+          <button class="nav-button" id="nextBtn" onclick="nextMessage()">
+            Próxima →
+          </button>
+        </div>
+      </div>
+
+      <a href="/" class="back-button">🎉 Fazer o Quiz</a>
+    </main>
+  </div>
+
+  <script>
+    let messages = [];
+    let currentIndex = 0;
+
+    async function loadMessages() {
+      try {
+        const response = await fetch('/api/resultados');
+        const data = await response.json();
+        
+        if (data.success && data.data && data.data.length > 0) {
+          messages = data.data.sort((a, b) => new Date(b.timestamp || b.data || 0) - new Date(a.timestamp || a.data || 0));
+          showMessages();
+        } else {
+          showEmptyState();
+        }
+      } catch (error) {
+        console.error('Erro ao carregar mensagens:', error);
+        showErrorState();
+      }
+    }
+
+    function showMessages() {
+      document.getElementById('loading').style.display = 'none';
+      document.getElementById('messages-container').style.display = 'block';
+      displayCurrentMessage();
+    }
+
+    function showEmptyState() {
+      document.getElementById('loading').style.display = 'none';
+      document.getElementById('empty-state').style.display = 'block';
+    }
+
+    function showErrorState() {
+      document.getElementById('loading').style.display = 'none';
+      document.getElementById('error-state').style.display = 'block';
+    }
+
+    function displayCurrentMessage() {
+      if (messages.length === 0) return;
+
+      const message = messages[currentIndex];
+      const container = document.getElementById('current-message');
+      
+      // Calcular porcentagem
+      const pontuacao = parseInt(message.pontuacao) || 0;
+      const total = parseInt(message.total) || 20;
+      const porcentagem = Math.round((pontuacao / total) * 100);
+      
+      // Escolher emoji baseado na pontuação
+      let emoji = "🎉";
+      if (porcentagem >= 80) emoji = "🌟";
+      else if (porcentagem >= 60) emoji = "👏";
+      else if (porcentagem >= 40) emoji = "💝";
+
+      container.innerHTML = `
+        <div class="message-card">
+          <div class="message-header">
+            <div class="sender-name">${emoji} ${message.nome || 'Anônimo'}</div>
+            <div class="message-date">${message.data || 'Data não informada'}</div>
+          </div>
+          
+          <div class="message-text">
+            "${message.mensagem || 'Sem mensagem'}"
+          </div>
+          
+          <div class="message-score">
+            ${pontuacao}/${total} acertos (${porcentagem}%)
+          </div>
+        </div>
+      `;
+
+      // Atualizar contador
+      document.getElementById('messageCounter').textContent = `${currentIndex + 1} de ${messages.length}`;
+      
+      // Atualizar botões de navegação
+      document.getElementById('prevBtn').disabled = currentIndex === 0;
+      document.getElementById('nextBtn').disabled = currentIndex === messages.length - 1;
+    }
+
+    function previousMessage() {
+      if (currentIndex > 0) {
+        currentIndex--;
+        displayCurrentMessage();
+      }
+    }
+
+    function nextMessage() {
+      if (currentIndex < messages.length - 1) {
+        currentIndex++;
+        displayCurrentMessage();
+      }
+    }
+
+    // Suporte a navegação por teclado
+    document.addEventListener('keydown', (e) => {
+      if (messages.length === 0) return;
+      
+      if (e.key === 'ArrowLeft') {
+        previousMessage();
+      } else if (e.key === 'ArrowRight') {
+        nextMessage();
+      }
+    });
+
+    // Carregar mensagens quando a página carrega
+    document.addEventListener('DOMContentLoaded', loadMessages);
+  </script>
+</body>
+</html>
