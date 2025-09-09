@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Comic+Neue:wght@400;700&display=swap" rel="stylesheet">
   <title>Quiz da Luísa - Aniversário de 1 Ano 🎉</title>
   <style>
     * {
@@ -12,7 +13,7 @@
     }
 
     body {
-      font-family: 'Comic Sans MS', cursive, sans-serif;
+      font-family: "Comic Neue", "Comic Sans MS", cursive, sans-serif;
       background: linear-gradient(135deg, #ffeef8 0%, #e8f5ff 50%, #f0fff4 100%);
       min-height: 100vh;
       padding: 20px;
@@ -302,7 +303,8 @@
 <body>
   <div class="container">
     <header class="header">
-      <div class="pinwheel">🌪️</div>
+      <div class="pinwheel"></div>
+      <img src="./pinwheel.png" style="width: 15%;" class="pinwheel" alt="" srcset="">
       <h1>Quiz da Luísa</h1>
       <div class="subtitle">Aniversário de 1 Ano!</div>
     </header>
@@ -314,6 +316,12 @@
           <p>Para confirmar sua presença, responda o quiz abaixo.</p>
         </div>
         <button class="btn" onclick="startQuiz()">Começar Quiz! 🌟</button>
+        <br>
+        <br>
+        <br>
+        <a href="jogo.html">
+        <button class="btn" onclick="">Jogar jogo da Luísa</button>
+        </a>
       </div>
 
       <div id="name-screen" class="hidden">
@@ -343,6 +351,12 @@
           <textarea id="userMessage" class="message-input" placeholder="Escreva algo especial para a Luísa..."></textarea>
           
           <button class="btn" onclick="submitMessage()">Enviar Mensagem 💝</button>
+          <br>
+          <br>
+          <br>
+          <a href="jogo.html">
+        <button class="btn" onclick="">Jogar jogo da Luísa 💝</button>
+          </a>
           <div id="submitStatus"></div>
         </div>
       </div>

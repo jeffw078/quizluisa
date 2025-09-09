@@ -1,0 +1,929 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cata-ventos da Luísa </title>
+  <style>
+    /* 
+    ===== INSTRUÇÕES PARA IMAGENS PNG =====
+    Para adicionar suas imagens PNG:
+    
+    1. CATAVENTO: 
+       Descomente e edite a linha na classe .pinwheel-blades:
+       background-image: url('caminho/para/catavento.png');
+    
+    2. CORAÇÃO: 
+       Descomente e edite a linha na classe .heart:
+       background-image: url('caminho/para/coracao.png');
+       
+    3. Se usar imagens PNG, pode remover as propriedades de fallback
+       (background, border-radius, :before, :after do coração)
+    ========================================
+    */
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      user-select: none;
+    }
+
+    body {
+      font-family: 'Comic Sans MS', cursive, sans-serif;
+      background: linear-gradient(to bottom, #87CEEB 0%, #B0E0E6 50%, #98FB98 100%);
+      min-height: 100vh;
+      overflow: hidden;
+      cursor: crosshair;
+    }
+
+    .game-container {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+    }
+
+    .game-header {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      text-align: center;
+      z-index: 1000;
+      pointer-events: none;
+    }
+
+    .game-title {
+      color: #ff6b9d;
+      font-size: 1.5em;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+      margin-bottom: 10px;
+    }
+
+    .game-stats {
+      display: flex;
+      gap: 20px;
+      justify-content: center;
+    }
+
+    .stat-box {
+      background: rgba(255, 255, 255, 0.9);
+      padding: 8px 16px;
+      border-radius: 20px;
+      border: 2px solid #ffd6e8;
+      font-size: 1.1em;
+      color: #ff6b9d;
+      font-weight: bold;
+    }
+
+    /* Debug controls */
+    .debug-controls {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 1001;
+    }
+
+    .debug-btn {
+      background: #ff4444;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 0.9em;
+      margin: 5px;
+      font-family: inherit;
+    }
+
+    .debug-btn:hover {
+      background: #cc3333;
+    }
+
+    .debug-btn.active {
+      background: #44ff44;
+      animation: pulse 1s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+    }
+
+    /* Cata-vento - PNG direto */
+    .pinwheel {
+      position: absolute;
+      width: 60px;
+      height: 60px;
+      cursor: pointer;
+      z-index: 10;
+      animation: fall linear;
+    }
+
+    .pinwheel-blades {
+      width: 50px;
+      height: 50px;
+      margin: 5px auto;
+      /* Removi background-image - adicione sua imagem PNG aqui */
+      background-image: url('pinwheel.png'); 
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-position: center;
+      position: relative;
+      
+    }
+
+    /* Animações de rotação bidirecionais */
+    .spin-right {
+      animation: spinRight 1s linear infinite;
+    }
+
+    .spin-left {
+      animation: spinLeft 1s linear infinite;
+    }
+
+    @keyframes spinRight {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    @keyframes spinLeft {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(-360deg); }
+    }
+
+    @keyframes fall {
+      from { top: -60px; }
+      to { top: 100vh; }
+    }
+
+    /* Nuvem ruim */
+    .bad-cloud {
+      position: absolute;
+      width: 60px;
+      height: 40px;
+      cursor: pointer;
+      z-index: 10;
+      animation: fall linear;
+    }
+
+    .cloud-shape {
+      width: 50px;
+      height: 25px;
+      background: #666;
+      border-radius: 25px;
+      margin: 5px auto;
+      position: relative;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+    }
+
+    .cloud-shape:before,
+    .cloud-shape:after {
+      content: '';
+      position: absolute;
+      background: #666;
+      border-radius: 50%;
+    }
+
+    .cloud-shape:before {
+      width: 20px;
+      height: 20px;
+      top: -10px;
+      left: 10px;
+    }
+
+    .cloud-shape:after {
+      width: 25px;
+      height: 25px;
+      top: -12px;
+      right: 8px;
+    }
+
+    .lightning {
+      position: absolute;
+      top: 35px;
+      left: 50%;
+      transform: translateX(-50%);
+      color: #FFD700;
+      font-size: 1.2em;
+      animation: flash 0.5s infinite alternate;
+    }
+
+    @keyframes flash {
+      from { opacity: 0.7; }
+      to { opacity: 1; }
+    }
+
+    /* Coração - PNG direto */
+    .bonus-heart {
+      position: absolute;
+      width: 50px;
+      height: 50px;
+      cursor: pointer;
+      z-index: 10;
+      animation: fall linear;
+    }
+
+    .heart {
+      width: 45px;
+      height: 45px;
+      margin: 2.5px auto;
+      background-image: url('like.png');
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-position: center;
+      animation: heartPulse 1.2s ease-in-out infinite;
+      position: relative;
+      }
+  
+
+    
+
+    
+
+    /* Efeito de pulsar no coração */
+    @keyframes heartPulse {
+      0%, 100% { transform: rotate(-45deg) scale(1); }
+      50% { transform: rotate(-45deg) scale(1.15); }
+    }
+
+    /* Efeito "poff" quando coração é clicado */
+    @keyframes poffEffect {
+      0% { 
+        transform: rotate(-45deg) scale(1);
+        opacity: 1;
+      }
+      50% { 
+        transform: rotate(-45deg) scale(1.8);
+        opacity: 0.7;
+      }
+      100% { 
+        transform: rotate(-45deg) scale(2.5);
+        opacity: 0;
+      }
+    }
+
+    .heart.poff {
+      animation: poffEffect 0.6s ease-out forwards;
+    }
+
+    /* Efeitos */
+    .effect {
+      position: absolute;
+      font-size: 2em;
+      font-weight: bold;
+      pointer-events: none;
+      z-index: 100;
+      animation: effectAnim 1s ease-out forwards;
+    }
+
+    @keyframes effectAnim {
+      0% { transform: scale(0.5); opacity: 1; }
+      50% { transform: scale(1.2); opacity: 1; }
+      100% { transform: scale(1) translateY(-50px); opacity: 0; }
+    }
+
+    /* Modais */
+    .modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 2000;
+    }
+
+    .modal-content {
+      background: white;
+      padding: 30px;
+      border-radius: 20px;
+      text-align: center;
+      border: 3px solid #ffd6e8;
+      max-width: 450px;
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+
+    .modal h2 {
+      color: #ff6b9d;
+      margin-bottom: 20px;
+    }
+
+    .btn {
+      background: linear-gradient(45deg, #ff9bd2, #c589e8);
+      color: white;
+      border: none;
+      padding: 12px 25px;
+      border-radius: 15px;
+      font-size: 1.1em;
+      font-weight: bold;
+      cursor: pointer;
+      margin: 5px;
+      font-family: inherit;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+    }
+
+    .btn-secondary {
+      background: linear-gradient(45deg, #888, #666);
+    }
+
+    .name-input {
+      width: 100%;
+      padding: 12px;
+      border: 3px solid #ffd6e8;
+      border-radius: 15px;
+      font-size: 1.1em;
+      margin: 15px 0;
+      text-align: center;
+      font-family: inherit;
+    }
+
+    .ranking-list {
+      text-align: left;
+      margin: 20px 0;
+    }
+
+    .ranking-item {
+      padding: 10px;
+      margin: 5px 0;
+      background: #f9f9f9;
+      border-radius: 10px;
+      border-left: 4px solid #ff6b9d;
+    }
+
+    .rules-text {
+      text-align: left;
+      margin: 20px 0;
+      line-height: 1.6;
+    }
+
+    .rules-text h3 {
+      color: #ff6b9d;
+      margin: 15px 0 10px 0;
+    }
+
+    .tab-buttons {
+      display: flex;
+      margin-bottom: 20px;
+    }
+
+    .tab-btn {
+      flex: 1;
+      padding: 10px;
+      background: #eee;
+      border: none;
+      cursor: pointer;
+      border-radius: 0;
+      font-family: inherit;
+    }
+
+    .tab-btn.active {
+      background: #ff6b9d;
+      color: white;
+    }
+
+    .tab-btn:first-child {
+      border-radius: 10px 0 0 10px;
+    }
+
+    .tab-btn:last-child {
+      border-radius: 0 10px 10px 0;
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+  <div class="game-container" id="gameContainer">
+    <div class="game-header">
+      <div class="game-title">Cata-ventos da Luísa - Nível <span id="level">1</span></div>
+      <div class="game-stats">
+        <div class="stat-box">Score: <span id="score">0</span></div>
+        <div class="stat-box">❤️ Vidas: <span id="lives">3</span></div>
+        <div class="stat-box">Combo: <span id="combo">0</span></div>
+      </div>
+    </div>
+
+    <div class="debug-controls">
+      <!-- <button class="debug-btn" id="debugBtn" onclick="toggleDebug()">Debug OFF</button> -->
+      <button class="btn" onclick="showRankingModal()" style="font-size: 0.9em; padding: 8px 12px;">📊 Ranking / Regras</button>
+    </div>
+  </div>
+
+  <!-- Modal de nome -->
+  <div class="modal" id="nameModal">
+    <div class="modal-content">
+      <h2>🎮 Digite seu nome</h2>
+      <input type="text" id="nameInput" class="name-input" placeholder="Seu nome...">
+      <br>
+      <button class="btn" onclick="startGame()">Começar!</button>
+      <br>
+      <button class="btn btn-secondary" onclick="showRankingModal()">📊 Ver Ranking / Regras </button>
+    </div>
+  </div>
+
+  <!-- Modal de fim -->
+  <div class="modal hidden" id="endModal">
+    <div class="modal-content">
+      <h2 id="endTitle">Game Over!</h2>
+      <p id="endMessage"></p>
+      <button class="btn" onclick="restart()">Jogar Novamente</button>
+      <button class="btn" onclick="goHome()">Voltar ao Quiz</button>
+      <button class="btn btn-secondary" onclick="showRankingModal()">📊 Ver Ranking</button>
+    </div>
+  </div>
+
+  <!-- Modal de Ranking e Regras -->
+  <div class="modal hidden" id="rankingModal">
+    <div class="modal-content">
+      <h2>🏆 Ranking & Regras</h2>
+      
+      <div class="tab-buttons">
+        <button class="tab-btn active" onclick="showTab('ranking')">🏆 Ranking</button>
+        <button class="tab-btn" onclick="showTab('rules')">📋 Regras</button>
+      </div>
+
+      <div id="rankingTab" class="tab-content active">
+        <div id="rankingList" class="ranking-list">
+          <!-- Rankings serão inseridos aqui -->
+        </div>
+        <button class="btn btn-secondary" onclick="clearRanking()">🗑️ Limpar Ranking</button>
+      </div>
+
+      <div id="rulesTab" class="tab-content">
+        <div class="rules-text">
+          <h3>🎯 Objetivo</h3>
+          <p>Clique nos cataventos coloridos que caem do céu para marcar pontos e avançar de nível!</p>
+          
+          <h3>⚡ Como Jogar</h3>
+          <p>• Clique nos <strong>cataventos coloridos</strong> para ganhar pontos</p>
+          <p>• Evite as <strong>nuvens com raios</strong> - elas tiram uma vida</p>
+          <p>• Colete <strong>corações rosa</strong> para ganhar vidas extras</p>
+          <p>• Faça combos clicando em sequência para multiplicar pontos</p>
+          
+          <h3>🎪 Sistema de Pontos</h3>
+          <p>• Catavento normal: <strong>10 pontos</strong></p>
+          <p>• Combo 5x: <strong>+vida extra</strong></p>
+          <p>• A cada 5 níveis: <strong>+vida extra</strong></p>
+          <p>• Catavento que passa: <strong>-5 pontos e -1 vida</strong></p>
+          <p>• Nuvem com raio: <strong>-1 vida e reset combo</strong></p>
+          
+          <h3>📈 Dificuldade</h3>
+          <p>• Objetos caem mais rápido a cada nível</p>
+          <p>• Mais nuvens ruins aparecem em níveis altos</p>
+          <p>• Para subir de nível: <strong>Nível × 15 pontos</strong></p>
+          
+          <h3>🏆 Vidas</h3>
+          <p>• Inicie com <strong>3 vidas</strong></p>
+          <p>• Máximo de <strong>9 vidas</strong></p>
+          <p>• Game Over quando chegar a 0 vidas</p>
+        </div>
+      </div>
+
+      <button class="btn" onclick="closeRankingModal()">Fechar</button>
+    </div>
+  </div>
+
+  <script>
+    console.log('🚀 VERSÃO 2.0 CARREGADA!');
+    
+    let gameRunning = false;
+    let score = 0;
+    let lives = 3;
+    let combo = 0;
+    let level = 1;
+    let playerName = '';
+    let debugMode = false;
+
+    // Configurações de dificuldade
+    const config = {
+      getSpawnRate: (lvl) => Math.max(800, 2000 - (lvl * 80)),
+      getFallSpeed: (lvl) => Math.max(3, 7 - (lvl * 0.2)),
+      getBadChance: (lvl) => Math.min(0.25, lvl * 0.02),
+      getHeartChance: () => 0.03
+    };
+
+    // Som
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+    function playSound(freq1, freq2, duration = 0.1) {
+      try {
+        const osc = audioContext.createOscillator();
+        const gain = audioContext.createGain();
+        
+        osc.connect(gain);
+        gain.connect(audioContext.destination);
+        
+        osc.frequency.setValueAtTime(freq1, audioContext.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(freq2, audioContext.currentTime + duration);
+        
+        gain.gain.setValueAtTime(0.1, audioContext.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration);
+        
+        osc.start(audioContext.currentTime);
+        osc.stop(audioContext.currentTime + duration);
+      } catch(e) {
+        console.log('Audio não disponível');
+      }
+    }
+
+    function updateUI() {
+      console.log('🎮 NOVA VERSÃO - UI UPDATE:', { score, lives, combo, level });
+      
+      // Forçar atualização direta
+      document.getElementById('score').textContent = score;
+      document.getElementById('lives').textContent = lives;
+      document.getElementById('combo').textContent = combo;
+      document.getElementById('level').textContent = level;
+      
+      console.log('✅ UI ATUALIZADA COM SUCESSO!');
+    }
+
+    function createEffect(x, y, text, color = '#FFD700') {
+      const effect = document.createElement('div');
+      effect.className = 'effect';
+      effect.textContent = text;
+      effect.style.left = x + 'px';
+      effect.style.top = y + 'px';
+      effect.style.color = color;
+      effect.style.textShadow = `2px 2px 4px rgba(0,0,0,0.5)`;
+      
+      document.getElementById('gameContainer').appendChild(effect);
+      
+      setTimeout(() => effect.remove(), 1000);
+    }
+
+    function createPinwheel() {
+      const pinwheel = document.createElement('div');
+      pinwheel.className = 'pinwheel';
+      pinwheel.style.left = Math.random() * (window.innerWidth - 60) + 'px';
+      const fallDuration = config.getFallSpeed(level);
+      pinwheel.style.animationDuration = fallDuration + 's';
+      
+      const direction = Math.random() > 0.5 ? 'spin-right' : 'spin-left';
+      pinwheel.innerHTML = `<div class="pinwheel-blades ${direction}"></div>`;
+      
+      let wasClicked = false;
+      
+      // Click handler
+      pinwheel.onclick = (e) => {
+        if (!gameRunning || wasClicked) return;
+        wasClicked = true;
+        
+        score += 10;
+        combo++;
+        
+        playSound(800, 1200, 0.1);
+        createEffect(e.clientX, e.clientY, `+10`);
+        
+        if (combo >= 5 && combo % 5 === 0) {
+          createEffect(e.clientX + 30, e.clientY - 30, `${combo}x!`, '#FFD700');
+        }
+        
+        if (combo === 20 || (combo > 20 && combo % 25 === 0)) {
+          lives = Math.min(lives + 1, 9);
+          createEffect(e.clientX, e.clientY - 50, '+1 ❤️', '#FF69B4');
+        }
+        
+        checkLevelUp();
+        updateUI();
+        pinwheel.remove();
+      };
+      
+      // Timer para catavento perdido
+      setTimeout(() => {
+        if (!wasClicked && gameRunning && pinwheel.parentNode) {
+          console.log('🔥 CATAVENTO PERDIDO! Antes:', { score, lives, combo });
+          
+          score = Math.max(0, score - 5);
+          lives = Math.max(0, lives - 1);
+          combo = 0;
+          
+          console.log('🔥 CATAVENTO PERDIDO! Depois:', { score, lives, combo });
+          
+          updateUI();
+          
+          createEffect(window.innerWidth / 2, 150, '-5 pontos', '#FF4444');
+          createEffect(window.innerWidth / 2, 190, '-1 ❤️', '#FF4444');
+          
+          if (lives <= 0) {
+            endGame();
+          }
+          
+          pinwheel.remove();
+        }
+      }, (fallDuration * 1000) + 1000);
+      
+      document.getElementById('gameContainer').appendChild(pinwheel);
+    }
+
+    function createBadCloud() {
+      const cloud = document.createElement('div');
+      cloud.className = 'bad-cloud';
+      cloud.style.left = Math.random() * (window.innerWidth - 60) + 'px';
+      cloud.style.animationDuration = (config.getFallSpeed(level) + 1) + 's';
+      
+      cloud.innerHTML = `
+        <div class="cloud-shape"></div>
+        <div class="lightning">⚡</div>
+      `;
+      
+      cloud.onclick = (e) => {
+        if (!gameRunning) return;
+        
+        lives--;
+        combo = 0;
+        playSound(200, 100, 0.3);
+        createEffect(e.clientX, e.clientY, '-1 ❤️', '#FF4444');
+        updateUI();
+        cloud.remove();
+        
+        if (lives <= 0) {
+          endGame();
+        }
+      };
+      
+      cloud.onanimationend = () => cloud.remove();
+      
+      document.getElementById('gameContainer').appendChild(cloud);
+    }
+
+    function createBonusHeart() {
+      const heart = document.createElement('div');
+      heart.className = 'bonus-heart';
+      heart.style.left = Math.random() * (window.innerWidth - 50) + 'px';
+      heart.style.animationDuration = (config.getFallSpeed(level) + 1.5) + 's';
+      
+      heart.innerHTML = `<div class="heart"></div>`;
+      
+      heart.onclick = (e) => {
+        if (!gameRunning) return;
+        
+        const heartElement = heart.querySelector('.heart');
+        heartElement.classList.add('poff');
+        
+        lives = Math.min(lives + 1, 9);
+        playSound(1200, 800, 0.2);
+        createEffect(e.clientX, e.clientY, '+1 ❤️', '#FF1744');
+        updateUI();
+        
+        setTimeout(() => heart.remove(), 600);
+      };
+      
+      heart.onanimationend = () => heart.remove();
+      
+      document.getElementById('gameContainer').appendChild(heart);
+    }
+
+    function spawnObjects() {
+      if (!gameRunning) return;
+      
+      const rand = Math.random();
+      const heartChance = config.getHeartChance();
+      const badChance = config.getBadChance(level);
+      
+      if (rand < heartChance) {
+        createBonusHeart();
+      } else if (rand < heartChance + badChance) {
+        createBadCloud();
+      } else {
+        createPinwheel();
+      }
+      
+      const nextSpawn = config.getSpawnRate(level) + (Math.random() * 400 - 200);
+      setTimeout(spawnObjects, Math.max(300, nextSpawn));
+    }
+
+    function checkLevelUp() {
+      const required = level * 15;
+      if (score >= required) {
+        level++;
+        
+        if (level % 5 === 0) {
+          lives = Math.min(lives + 1, 9);
+          createEffect(window.innerWidth / 2, window.innerHeight / 2, `NÍVEL ${level}! +1 ❤️`, '#FFD700');
+        } else {
+          createEffect(window.innerWidth / 2, window.innerHeight / 2, `NÍVEL ${level}!`, '#FFD700');
+        }
+      }
+    }
+
+    function startGame() {
+      const name = document.getElementById('nameInput').value.trim();
+      if (!name) {
+        alert('Digite seu nome!');
+        return;
+      }
+      
+      playerName = name;
+      document.getElementById('nameModal').classList.add('hidden');
+      
+      gameRunning = true;
+      score = 0;
+      lives = 3;
+      combo = 0;
+      level = 1;
+      
+      updateUI();
+      spawnObjects();
+      
+      try {
+        audioContext.resume();
+      } catch(e) {
+        console.log('Audio não disponível');
+      }
+    }
+
+    function endGame() {
+      gameRunning = false;
+      
+      document.querySelectorAll('.pinwheel, .bad-cloud, .bonus-heart').forEach(obj => obj.remove());
+      
+      let title, message;
+      if (level >= 10) {
+        title = '👑 LENDA!';
+        message = `Incrível! Você chegou ao nível ${level}!`;
+      } else if (level >= 7) {
+        title = '🌟 EXCELENTE!';
+        message = `Parabéns! Nível ${level} é impressionante!`;
+      } else if (level >= 4) {
+        title = '🎉 MUITO BOM!';
+        message = `Bom trabalho! Chegou ao nível ${level}!`;
+      } else {
+        title = '💪 TENTE NOVAMENTE!';
+        message = `Nível ${level}. Você pode melhorar!`;
+      }
+      
+      document.getElementById('endTitle').textContent = title;
+      document.getElementById('endMessage').innerHTML = `
+        ${message}<br><br>
+        <strong>Pontuação:</strong> ${score}<br>
+        <strong>Nível:</strong> ${level}
+      `;
+      document.getElementById('endModal').classList.remove('hidden');
+      
+      saveScore();
+    }
+
+    function saveScore() {
+      try {
+        const rankings = JSON.parse(localStorage.getItem('pinwheelRankings') || '[]');
+        
+        const newScore = {
+          nome: playerName,
+          pontuacao: score,
+          nivel: level,
+          data: new Date().toLocaleString('pt-BR')
+        };
+        
+        rankings.push(newScore);
+        rankings.sort((a, b) => b.pontuacao - a.pontuacao);
+        rankings.splice(10);
+        
+        localStorage.setItem('pinwheelRankings', JSON.stringify(rankings));
+      } catch(e) {
+        console.log('Erro ao salvar ranking');
+      }
+    }
+
+    function loadRanking() {
+      try {
+        const rankings = JSON.parse(localStorage.getItem('pinwheelRankings') || '[]');
+        const rankingList = document.getElementById('rankingList');
+        
+        if (rankings.length === 0) {
+          rankingList.innerHTML = '<p style="text-align: center; color: #888;">Nenhum ranking ainda. Seja o primeiro!</p>';
+          return;
+        }
+        
+        rankingList.innerHTML = rankings.map((rank, index) => `
+          <div class="ranking-item">
+            <strong>${index + 1}º ${rank.nome}</strong><br>
+            <small>Pontos: ${rank.pontuacao} • Nível: ${rank.nivel}</small><br>
+            <small style="color: #888;">${rank.data}</small>
+          </div>
+        `).join('');
+      } catch(e) {
+        document.getElementById('rankingList').innerHTML = '<p style="color: red;">Erro ao carregar ranking</p>';
+      }
+    }
+
+    function clearRanking() {
+      if (confirm('Tem certeza que deseja limpar todo o ranking?')) {
+        localStorage.removeItem('pinwheelRankings');
+        loadRanking();
+      }
+    }
+
+    function showRankingModal() {
+      loadRanking();
+      document.getElementById('rankingModal').classList.remove('hidden');
+    }
+
+    function closeRankingModal() {
+      document.getElementById('rankingModal').classList.add('hidden');
+    }
+
+    function showTab(tabName) {
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+      
+      event.target.classList.add('active');
+      document.getElementById(tabName + 'Tab').classList.add('active');
+      
+      if (tabName === 'ranking') {
+        loadRanking();
+      }
+    }
+
+    // Debug Mode
+    function toggleDebug() {
+      debugMode = !debugMode;
+      const btn = document.getElementById('debugBtn');
+      
+      if (debugMode) {
+        btn.textContent = 'Debug ON';
+        btn.classList.add('active');
+        startAutoClick();
+      } else {
+        btn.textContent = 'Debug OFF';
+        btn.classList.remove('active');
+        stopAutoClick();
+      }
+    }
+
+    let autoClickInterval;
+
+    function startAutoClick() {
+      autoClickInterval = setInterval(() => {
+        if (!gameRunning) return;
+        
+        const pinwheels = document.querySelectorAll('.pinwheel');
+        pinwheels.forEach(pinwheel => {
+          const rect = pinwheel.getBoundingClientRect();
+          const event = new MouseEvent('click', {
+            clientX: rect.left + rect.width / 2,
+            clientY: rect.top + rect.height / 2
+          });
+          pinwheel.dispatchEvent(event);
+        });
+        
+        const hearts = document.querySelectorAll('.bonus-heart');
+        hearts.forEach(heart => {
+          const rect = heart.getBoundingClientRect();
+          const event = new MouseEvent('click', {
+            clientX: rect.left + rect.width / 2,
+            clientY: rect.top + rect.height / 2
+          });
+          heart.dispatchEvent(event);
+        });
+      }, 100);
+    }
+
+    function stopAutoClick() {
+      if (autoClickInterval) {
+        clearInterval(autoClickInterval);
+        autoClickInterval = null;
+      }
+    }
+
+    function restart() {
+      document.getElementById('endModal').classList.add('hidden');
+      document.getElementById('nameModal').classList.remove('hidden');
+      document.getElementById('nameInput').value = playerName || '';
+      
+      if (debugMode) {
+        toggleDebug();
+      }
+    }
+
+    function goHome() {
+      window.location.href = '/';
+    }
+
+    // Eventos
+    document.getElementById('nameInput').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') startGame();
+    });
+
+    window.addEventListener('beforeunload', () => {
+      stopAutoClick();
+    });
+  </script>
+</body>
+</html>
