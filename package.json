@@ -9,8 +9,9 @@
     "build": "echo 'Build complete - static files ready'",
     "start": "vercel --prod"
   },
-  "dependencies": {},
-  "devDependencies": {},
+  "dependencies": {
+    "express": "^5.1.0"
+  },
   "engines": {
     "node": "22.x"
   },
