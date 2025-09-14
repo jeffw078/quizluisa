@@ -105,11 +105,15 @@
 
     .pinwheel-blades {
       width: 50px;
-      height: 50px;
-      margin: 5px auto;
-      background: conic-gradient(from 0deg, #ff6b9d, #ffd700, #4ecdc4, #45b7d1, #ff6b9d);
-      border-radius: 50% 10% 50% 10%;
-      position: relative;
+  height: 50px;
+  margin: 5px auto;
+  position: relative;
+  
+  /* 🎯 DESCOMENTE A LINHA ABAIXO E AJUSTE O CAMINHO: */
+  background-image: url('pinwheel.png');  /* ✅ ATIVADO */
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
     }
 
     .spin-right {
@@ -202,28 +206,17 @@
     }
 
     .heart {
-      width: 30px;
-      height: 30px;
-      margin: 5px auto;     
-      background: #ff69b4;
-      position: relative;
-      transform: rotate(-45deg);
+  width: 30px;
+  height: 30px;
+  margin: 5px auto;
+  position: relative;
+  background-image: url('heart.png');  /* ✅ ATIVADO */
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
     }
 
-    .heart:before,
-    .heart:after {
-      content: '';
-      width: 30px;
-      height: 30px;
-      position: absolute;
-      left: 15px;
-      top: 0;
-      background: #ff69b4;
-      border-radius: 15px 15px 0 0;
-      transform: rotate(-45deg);
-      transform-origin: 0 15px;
-    }
-
+   
     .heart:after {
       left: 0;
       transform: rotate(45deg);
@@ -411,7 +404,7 @@
     </div>
 
     <div class="debug-controls">
-      <button class="debug-btn" id="debugBtn" onclick="toggleDebug()">Debug OFF</button>
+      <!-- <button class="debug-btn" id="debugBtn" onclick="toggleDebug()">Debug OFF</button> -->
       <button class="btn" onclick="showRankingModal()" style="font-size: 0.9em; padding: 8px 12px;">📊 Ranking / Regras</button>
     </div>
   </div>
@@ -456,7 +449,7 @@
         <div id="rankingList" class="ranking-list">
           <!-- Rankings serão inseridos aqui -->
         </div>
-        <button class="btn btn-secondary" onclick="clearRanking()">🗑️ Limpar Ranking</button>
+      
       </div>
 
       <div id="rulesTab" class="tab-content">
