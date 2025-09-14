@@ -6,9 +6,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Comic+Neue:wght@400;700&display=swap" rel="stylesheet">
   <title>Cata-ventos da Luísa </title>
   
-  <!-- Supabase JS -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  
   <style>
     /* 
     ===== INSTRUÇÕES PARA IMAGENS PNG =====
@@ -116,7 +113,7 @@
     }
 
     /* Cata-vento - Você pode substituir por PNG direto */
-    .pinwheel {
+   .pinwheel {
       position: absolute;
       width: 60px;
       height: 60px;
@@ -137,6 +134,7 @@
       position: relative;
       
     }
+
 
     /* Animações de rotação bidirecionais */
     .spin-right {
@@ -230,41 +228,21 @@
       animation: fall linear;
     }
 
+    
     .heart {
       width: 30px;
       height: 30px;
-      margin: 5px auto;
-      /* Descomente para usar PNG:
-      background-image: url('coracao.png');
+      margin: 5px auto;     
+      background-image: url('like.png');
       background-size: contain;
       background-repeat: no-repeat;
       background-position: center;
-      */
       
-      /* CSS fallback se não usar PNG */
-      background: #ff69b4;
-      position: relative;
-      transform: rotate(-45deg);
-    }
+      
+    
+    }  
 
-    .heart:before,
-    .heart:after {
-      content: '';
-      width: 15px;
-      height: 24px;
-      position: absolute;
-      left: 15px;
-      transform: rotate(-45deg);
-      background: #ff69b4;
-      border-radius: 15px 15px 0 0;
-      transform-origin: 0 100%;
-    }
-
-    .heart:after {
-      left: 0;
-      transform: rotate(45deg);
-      transform-origin: 100% 100%;
-    }
+    
 
     /* Efeitos visuais */
     .effect {
@@ -444,7 +422,7 @@
   <div class="modal" id="nameModal">
     <div class="modal-content">
       <h2>🎮 Digite seu nome</h2>
-      <input type="text" id="nameInput" class="name-input" placeholder="Seu nome...">
+      <input type="text" id="nameInput" class="name-input" placeholder="Seu nome..." maxlength="30">
       <br>
       <button class="btn" onclick="startGame()">Começar!</button>
       <br>
@@ -457,6 +435,9 @@
     <div class="modal-content">
       <h2 id="endTitle">Game Over!</h2>
       <p id="endMessage"></p>
+      <div id="posicaoJogador" style="background: #e3f2fd; padding: 10px; margin: 15px 0; border-radius: 8px; font-size: 0.9em; display: none;">
+        <!-- Posição do jogador será exibida aqui -->
+      </div>
       <button class="btn" onclick="restart()">Jogar Novamente</button>
       <button class="btn" onclick="goHome()">Voltar ao Quiz</button>
       <button class="btn btn-secondary" onclick="showRankingModal()">📊 Ver Ranking</button>
@@ -514,8 +495,11 @@
     </div>
   </div>
 
+  <!-- Biblioteca do Supabase -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
   <script>
-    console.log('🚀 VERSÃO 2.0 CARREGADA! Agora com Supabase!');
+    console.log('🚀 VERSÃO 3.0 CARREGADA! Agora com Supabase!');
 
     // === CONFIGURAÇÃO DO SUPABASE ===
     const SUPABASE_URL = 'SUA_SUPABASE_URL_AQUI';
@@ -538,6 +522,7 @@
     let level = 1;
     let playerName = '';
     let debugMode = false;
+    let gameStartTime = 0; // NOVO: para calcular tempo de jogo
 
     // Configurações do jogo
     const config = {
@@ -745,11 +730,16 @@
       }
     }
 
-    // === FUNÇÕES DO JOGO (Mantidas iguais) ===
+    // === FUNÇÕES DO JOGO (MODIFICADAS PARA RANKING) ===
     function startGame() {
       const name = document.getElementById('nameInput').value.trim();
       if (!name) {
         alert('Digite seu nome!');
+        return;
+      }
+      
+      if (name.length < 2) {
+        alert('Digite um nome com pelo menos 2 caracteres!');
         return;
       }
       
@@ -761,6 +751,7 @@
       lives = 3;
       combo = 0;
       level = 1;
+      gameStartTime = Date.now(); // NOVO: marcar início do jogo
       
       updateUI();
       spawnObjects();
@@ -772,10 +763,13 @@
       }
     }
 
-    function endGame() {
+    async function endGame() {
       gameRunning = false;
       
       document.querySelectorAll('.pinwheel, .bad-cloud, .bonus-heart').forEach(obj => obj.remove());
+      
+      // NOVO: Calcular tempo de jogo e salvar ranking
+      const gameTimeSeconds = Math.round((Date.now() - gameStartTime) / 1000);
       
       let title, message;
       if (level >= 10) {
@@ -796,15 +790,51 @@
       document.getElementById('endMessage').innerHTML = `
         ${message}<br><br>
         <strong>Pontuação:</strong> ${score}<br>
-        <strong>Nível:</strong> ${level}
+        <strong>Nível:</strong> ${level}<br>
+        <strong>Tempo:</strong> ${gameTimeSeconds}s
       `;
-      document.getElementById('endModal').classList.remove('hidden');
+
+      // NOVO: Salvar no ranking e mostrar posição
+      try {
+        console.log('💾 Salvando no ranking...');
+        
+        // Usar as funções dos arquivos de ranking se disponíveis
+        if (typeof window.salvarRanking === 'function') {
+          await window.salvarRanking(
+            playerName,
+            score,
+            gameTimeSeconds,
+            Math.floor(score / 10), // Estimativa de cata-ventos clicados
+            Math.floor(score / 10)  // Estimativa de acertos
+          );
+        } else {
+          // Fallback para Supabase direto
+          await saveScore();
+        }
+
+        // Mostrar posição do jogador
+        if (typeof window.buscarPosicaoJogador === 'function') {
+          const posicaoInfo = await window.buscarPosicaoJogador(playerName);
+          
+          if (posicaoInfo.encontrado) {
+            const emoji = posicaoInfo.posicao === 1 ? '🥇' : posicaoInfo.posicao === 2 ? '🥈' : posicaoInfo.posicao === 3 ? '🥉' : '🏅';
+            document.getElementById('posicaoJogador').innerHTML = `
+              ${emoji} <strong>Você está na ${posicaoInfo.posicao}ª posição</strong> de ${posicaoInfo.total} jogadores!
+            `;
+            document.getElementById('posicaoJogador').style.display = 'block';
+          }
+        }
+      } catch (error) {
+        console.log('⚠️ Erro ao salvar ranking:', error);
+        // O jogo continua funcionando normalmente mesmo com erro no ranking
+      }
       
-      saveScore();
+      document.getElementById('endModal').classList.remove('hidden');
     }
 
-    // === FUNÇÕES DE RANKING COM SUPABASE ===
+    // === FUNÇÕES DE RANKING (ATUALIZADAS) ===
     async function saveScore() {
+      // Fallback para quando os arquivos de ranking não estão disponíveis
       const newScore = {
         nome: playerName,
         pontuacao: score,
@@ -814,30 +844,29 @@
 
       try {
         if (supabase) {
-          // Salvar no Supabase
           const { data, error } = await supabase
             .from('ranking_cataventos')
             .insert([{
-              nome: newScore.nome,
+              nome_jogador: newScore.nome,
               pontuacao: newScore.pontuacao,
-              nivel: newScore.nivel,
+              tempo_segundos: Math.round((Date.now() - gameStartTime) / 1000),
+              total_perguntas: Math.floor(score / 10),
+              acertos: Math.floor(score / 10),
+              percentual_acerto: 100,
               data_jogo: new Date().toISOString()
             }]);
 
           if (error) {
             console.error('Erro ao salvar no Supabase:', error);
-            // Fallback para localStorage
             saveToLocalStorage(newScore);
           } else {
             console.log('✅ Ranking salvo no Supabase!');
           }
         } else {
-          // Se Supabase não configurado, usar localStorage
           saveToLocalStorage(newScore);
         }
       } catch (error) {
         console.error('Erro ao salvar ranking:', error);
-        // Fallback para localStorage
         saveToLocalStorage(newScore);
       }
     }
@@ -859,35 +888,38 @@
       const rankingList = document.getElementById('rankingList');
       
       try {
+        console.log('📊 Carregando ranking...');
+        rankingList.innerHTML = '<div style="text-align: center; padding: 20px;">🏆 Carregando...</div>';
+        
         let rankings = [];
 
-        if (supabase) {
-          // Carregar do Supabase
-          const { data, error } = await supabase
-            .from('ranking_cataventos')
-            .select('*')
-            .order('pontuacao', { ascending: false })
-            .order('nivel', { ascending: false })
-            .limit(10);
-
-          if (error) {
-            console.error('Erro ao carregar do Supabase:', error);
-            // Fallback para localStorage
-            rankings = JSON.parse(localStorage.getItem('pinwheelRankings') || '[]');
-          } else {
-            // Converter dados do Supabase para formato local
-            rankings = data.map(item => ({
-              nome: item.nome,
-              pontuacao: item.pontuacao,
-              nivel: item.nivel,
-              data: new Date(item.data_jogo).toLocaleString('pt-BR')
-            }));
-            console.log('☁️ Ranking carregado do Supabase');
-          }
+        // Usar a função do sistema de ranking se disponível
+        if (typeof window.buscarRanking === 'function') {
+          rankings = await window.buscarRanking(10);
         } else {
-          // Se Supabase não configurado, usar localStorage
-          rankings = JSON.parse(localStorage.getItem('pinwheelRankings') || '[]');
-          console.log('💾 Ranking carregado localmente');
+          // Fallback para Supabase direto ou localStorage
+          if (supabase) {
+            const { data, error } = await supabase
+              .from('ranking_cataventos')
+              .select('*')
+              .order('pontuacao', { ascending: false })
+              .order('tempo_segundos', { ascending: true })
+              .limit(10);
+
+            if (error) {
+              console.error('Erro ao carregar do Supabase:', error);
+              rankings = JSON.parse(localStorage.getItem('pinwheelRankings') || '[]');
+            } else {
+              rankings = data.map(item => ({
+                nome_jogador: item.nome_jogador,
+                pontuacao: item.pontuacao,
+                tempo_segundos: item.tempo_segundos,
+                data_jogo: item.data_jogo
+              }));
+            }
+          } else {
+            rankings = JSON.parse(localStorage.getItem('pinwheelRankings') || '[]');
+          }
         }
         
         if (rankings.length === 0) {
@@ -895,15 +927,29 @@
           return;
         }
         
-        rankingList.innerHTML = rankings.map((rank, index) => `
-          <div class="ranking-item">
-            <strong>${index + 1}º ${rank.nome}</strong><br>
-            <small>Pontos: ${rank.pontuacao} • Nível: ${rank.nivel}</small><br>
-            <small style="color: #888;">${rank.data}</small>
-          </div>
-        `).join('');
-      } catch(e) {
-        console.error('Erro ao carregar ranking:', e);
+        rankingList.innerHTML = rankings.map((rank, index) => {
+          const emoji = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : '🏅';
+          const dataFormatada = rank.data_jogo ? 
+            new Date(rank.data_jogo).toLocaleDateString('pt-BR') : 
+            rank.data || 'N/A';
+          const tempo = rank.tempo_segundos ? `${rank.tempo_segundos}s` : 'N/A';
+          
+          return `
+            <div class="ranking-item">
+              <strong>${emoji} ${index + 1}º ${rank.nome_jogador || rank.nome}</strong><br>
+              <small>
+                🎯 ${rank.pontuacao} pontos • 
+                ⏱️ ${tempo} • 
+                📅 ${dataFormatada}
+              </small>
+            </div>
+          `;
+        }).join('');
+        
+        console.log('✅ Ranking carregado:', rankings.length, 'jogadores');
+        
+      } catch(error) {
+        console.error('❌ Erro ao carregar ranking:', error);
         rankingList.innerHTML = '<p style="color: red;">Erro ao carregar ranking</p>';
       }
     }
@@ -911,8 +957,6 @@
     async function clearRanking() {
       if (!confirm('Tem certeza que deseja limpar todo o ranking?')) return;
 
-      // Por enquanto, só limpar localStorage
-      // Quando configurar Supabase, adicionar limpeza do banco aqui
       localStorage.removeItem('pinwheelRankings');
       console.log('💾 Ranking local limpo');
       
@@ -920,8 +964,8 @@
     }
 
     // === FUNÇÕES DE MODAL E NAVEGAÇÃO (Mantidas iguais) ===
-    function showRankingModal() {
-      loadRanking();
+    async function showRankingModal() {
+      await loadRanking();
       document.getElementById('rankingModal').classList.remove('hidden');
     }
 
@@ -945,6 +989,7 @@
       document.getElementById('endModal').classList.add('hidden');
       document.getElementById('nameModal').classList.remove('hidden');
       document.getElementById('nameInput').value = playerName || '';
+      document.getElementById('posicaoJogador').style.display = 'none';
       
       if (debugMode) {
         toggleDebug();
@@ -1015,5 +1060,9 @@
       stopAutoClick();
     });
   </script>
+
+  <!-- Arquivos do sistema de ranking -->
+  <script src="salvar-ranking.js"></script>
+  <script src="ranking-jogo.js"></script>
 </body>
 </html>
