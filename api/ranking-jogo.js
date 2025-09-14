@@ -1,16 +1,29 @@
 // ranking-jogo.js
 // Configuração do Supabase (deve ser a mesma do salvar-ranking.js)
-const SUPABASE_URL = 'https://wnzdcucbveynkwgoskwg.supabase.co' // Substitua pela sua URL
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InduemRjdWNidmV5bmt3Z29za3dnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYzMzgyODUsImV4cCI6MjA3MTkxNDI4NX0.2QeIFlwn4NLPWeMS_Ul8cauultfwUaHiGHY1XVyEcp0'; // Substitua pela sua chave anônima
+const SUPABASE_URL = 'https://wnzdcucbveynkwgoskwg.supabase.co'; // URL corrigida (removido ponto e vírgula)
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InduemRjdWNidmV5bmt3Z29za3dnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYzMzgyODUsImV4cCI6MjA3MTkxNDI4NX0.2QeIFlwn4NLPWeMS_Ul8cauultfwUaHiGHY1XVyEcp0';
 
-// Inicializar cliente Supabase (verificar se já foi inicializado)
+// Inicializar cliente Supabase
 let supabaseClient;
-if (typeof window.supabaseClient !== 'undefined') {
-    supabaseClient = window.supabaseClient;
-} else {
-    const { createClient } = supabase;
-    supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    window.supabaseClient = supabaseClient;
+
+function inicializarSupabaseRanking() {
+    try {
+        if (typeof window.supabaseClient !== 'undefined') {
+            supabaseClient = window.supabaseClient;
+            console.log('📊 Usando cliente Supabase existente');
+        } else if (typeof window.supabase !== 'undefined' && window.supabase.createClient) {
+            supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            window.supabaseClient = supabaseClient;
+            console.log('📊 Cliente Supabase criado para ranking');
+        } else {
+            console.log('⚠️ Supabase ainda não está disponível para ranking');
+            return false;
+        }
+        return true;
+    } catch (error) {
+        console.error('❌ Erro ao inicializar Supabase para ranking:', error);
+        return false;
+    }
 }
 
 /**
@@ -21,7 +34,15 @@ if (typeof window.supabaseClient !== 'undefined') {
  */
 async function buscarRanking(limite = 10, ordenarPor = 'pontuacao') {
     try {
-        console.log(`Buscando ranking - limite: ${limite}, ordenar por: ${ordenarPor}`);
+        console.log(`📊 Buscando ranking - limite: ${limite}, ordenar por: ${ordenarPor}`);
+
+        // Inicializar Supabase se necessário
+        if (!supabaseClient) {
+            if (!inicializarSupabaseRanking()) {
+                console.log('📱 Supabase não disponível, tentando localStorage...');
+                return buscarRankingLocalStorage();
+            }
+        }
 
         const { data, error } = await supabaseClient
             .from('ranking')
@@ -39,16 +60,41 @@ async function buscarRanking(limite = 10, ordenarPor = 'pontuacao') {
             .limit(limite);
 
         if (error) {
-            console.error('Erro ao buscar ranking:', error);
-            throw error;
+            console.error('❌ Erro ao buscar ranking:', error);
+            console.log('📱 Tentando localStorage como backup...');
+            return buscarRankingLocalStorage();
         }
 
-        console.log('Ranking encontrado:', data);
+        console.log('✅ Ranking encontrado:', data);
         return data || [];
 
     } catch (error) {
-        console.error('Erro ao buscar ranking:', error);
-        mostrarMensagemErro('Erro ao carregar ranking: ' + error.message);
+        console.error('💥 Erro ao buscar ranking:', error);
+        console.log('📱 Tentando localStorage como backup...');
+        return buscarRankingLocalStorage();
+    }
+}
+
+/**
+ * Função de backup para buscar ranking no localStorage
+ */
+function buscarRankingLocalStorage() {
+    try {
+        const rankings = JSON.parse(localStorage.getItem('pinwheelRankings') || '[]');
+        
+        // Converter formato para compatibilidade
+        return rankings.map(rank => ({
+            nome_jogador: rank.nome || rank.nome_jogador,
+            pontuacao: rank.pontuacao,
+            tempo_segundos: rank.tempo || rank.tempo_segundos || 0,
+            total_perguntas: rank.total_perguntas || Math.floor(rank.pontuacao / 10),
+            acertos: rank.acertos || Math.floor(rank.pontuacao / 10),
+            percentual_acerto: rank.percentual_acerto || 100,
+            data_jogo: rank.data || rank.data_jogo
+        })).slice(0, 10);
+        
+    } catch (error) {
+        console.error('❌ Erro ao buscar ranking no localStorage:', error);
         return [];
     }
 }
@@ -60,10 +106,12 @@ async function buscarRanking(limite = 10, ordenarPor = 'pontuacao') {
  */
 async function exibirRanking(containerId = 'ranking-container', limite = 10) {
     try {
+        console.log(`🖥️ Exibindo ranking no container: ${containerId}`);
+        
         // Mostrar loading
         const container = document.getElementById(containerId);
         if (!container) {
-            console.error(`Container ${containerId} não encontrado`);
+            console.error(`❌ Container ${containerId} não encontrado`);
             return;
         }
 
@@ -130,8 +178,10 @@ async function exibirRanking(containerId = 'ranking-container', limite = 10) {
         // Aplicar estilos
         aplicarEstilosRanking();
 
+        console.log('✅ Ranking exibido com sucesso!');
+
     } catch (error) {
-        console.error('Erro ao exibir ranking:', error);
+        console.error('💥 Erro ao exibir ranking:', error);
         const container = document.getElementById(containerId);
         if (container) {
             container.innerHTML = `
@@ -151,6 +201,7 @@ async function exibirRanking(containerId = 'ranking-container', limite = 10) {
  * Função para atualizar ranking (recarregar)
  */
 async function atualizarRanking(containerId = 'ranking-container', limite = 10) {
+    console.log('🔄 Atualizando ranking...');
     await exibirRanking(containerId, limite);
 }
 
@@ -160,28 +211,26 @@ async function atualizarRanking(containerId = 'ranking-container', limite = 10) 
  */
 async function buscarPosicaoJogador(nomeJogador) {
     try {
-        const { data, error } = await supabaseClient
-            .from('ranking')
-            .select('nome_jogador, pontuacao')
-            .order('pontuacao', { ascending: false })
-            .order('tempo_segundos', { ascending: true });
+        console.log(`🔍 Buscando posição do jogador: ${nomeJogador}`);
 
-        if (error) {
-            throw error;
-        }
+        // Buscar todos os rankings
+        const todosJogadores = await buscarRanking(1000); // Buscar muitos para ter certeza
 
-        const posicao = data.findIndex(jogador => 
+        const posicao = todosJogadores.findIndex(jogador => 
             jogador.nome_jogador.toLowerCase() === nomeJogador.toLowerCase()
         ) + 1;
 
-        return {
+        const resultado = {
             posicao: posicao,
-            total: data.length,
+            total: todosJogadores.length,
             encontrado: posicao > 0
         };
 
+        console.log('📍 Posição encontrada:', resultado);
+        return resultado;
+
     } catch (error) {
-        console.error('Erro ao buscar posição do jogador:', error);
+        console.error('❌ Erro ao buscar posição do jogador:', error);
         return { posicao: 0, total: 0, encontrado: false };
     }
 }
@@ -203,12 +252,17 @@ function obterEmojiPosicao(posicao) {
  */
 function formatarData(dataISO) {
     if (!dataISO) return 'N/A';
-    const data = new Date(dataISO);
-    return data.toLocaleDateString('pt-BR', {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric'
-    });
+    try {
+        const data = new Date(dataISO);
+        return data.toLocaleDateString('pt-BR', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric'
+        });
+    } catch (error) {
+        console.error('Erro ao formatar data:', error);
+        return 'N/A';
+    }
 }
 
 /**
@@ -230,6 +284,7 @@ function formatarTempo(segundos) {
  * Função para escapar HTML
  */
 function escapeHtml(text) {
+    if (!text) return '';
     const map = {
         '&': '&amp;',
         '<': '&lt;',
@@ -237,7 +292,7 @@ function escapeHtml(text) {
         '"': '&quot;',
         "'": '&#039;'
     };
-    return text.replace(/[&<>"']/g, m => map[m]);
+    return text.toString().replace(/[&<>"']/g, m => map[m]);
 }
 
 /**
@@ -405,34 +460,31 @@ function aplicarEstilosRanking() {
     document.head.appendChild(style);
 }
 
-/**
- * Função para mostrar mensagem de erro (reutilizada do salvar-ranking.js)
- */
-function mostrarMensagemErro(mensagem) {
-    const div = document.createElement('div');
-    div.className = 'mensagem-erro';
-    div.innerHTML = `
-        <div style="background: #f8d7da; color: #721c24; padding: 15px; margin: 10px 0; border-radius: 5px; border: 1px solid #f5c6cb;">
-            <strong>❌ Erro!</strong> ${mensagem}
-        </div>
-    `;
+// Função de inicialização automática
+function inicializar() {
+    console.log('🚀 Inicializando sistema de ranking...');
     
-    const container = document.getElementById('mensagens') || document.body;
-    container.insertBefore(div, container.firstChild);
+    // Tentar inicializar Supabase
+    inicializarSupabaseRanking();
     
-    setTimeout(() => {
-        div.remove();
-    }, 8000);
-}
-
-// Função de inicialização automática (executar quando o DOM estiver pronto)
-document.addEventListener('DOMContentLoaded', function() {
     // Se existir um container de ranking na página, carregar automaticamente
     const rankingContainer = document.getElementById('ranking-container');
     if (rankingContainer) {
+        console.log('📊 Container de ranking encontrado, carregando...');
         exibirRanking('ranking-container');
     }
-});
+}
+
+// Aguardar carregamento
+if (typeof document !== 'undefined') {
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(inicializar, 1500); // Aguardar um pouco mais para garantir que tudo carregou
+        });
+    } else {
+        setTimeout(inicializar, 1500);
+    }
+}
 
 // Exportar funções para uso global
 window.buscarRanking = buscarRanking;
