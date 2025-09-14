@@ -1,6 +1,6 @@
 // ranking-jogo.js
 // Configuração do Supabase (deve ser a mesma do salvar-ranking.js)
-const SUPABASE_URL = 'https://wnzdcucbveynkwgoskwg.supabase.co;' // Substitua pela sua URL
+const SUPABASE_URL = 'https://wnzdcucbveynkwgoskwg.supabase.co' // Substitua pela sua URL
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InduemRjdWNidmV5bmt3Z29za3dnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYzMzgyODUsImV4cCI6MjA3MTkxNDI4NX0.2QeIFlwn4NLPWeMS_Ul8cauultfwUaHiGHY1XVyEcp0'; // Substitua pela sua chave anônima
 
 // Inicializar cliente Supabase (verificar se já foi inicializado)
