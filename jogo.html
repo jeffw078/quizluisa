@@ -7,23 +7,6 @@
   <title>Cata-ventos da Luísa </title>
   
   <style>
-    /* 
-    ===== INSTRUÇÕES PARA IMAGENS PNG =====
-    Para adicionar suas imagens PNG:
-    
-    1. CATAVENTO: 
-       Descomente e edite a linha na classe .pinwheel-blades:
-       background-image: url('caminho/para/catavento.png');
-    
-    2. CORAÇÃO: 
-       Descomente e edite a linha na classe .heart:
-       background-image: url('caminho/para/coracao.png');
-       
-    3. Se usar imagens PNG, pode remover as propriedades de fallback
-       (background, border-radius, :before, :after do coração)
-    ========================================
-    */
-    
     * {
       margin: 0;
       padding: 0;
@@ -78,7 +61,6 @@
       font-weight: bold;
     }
 
-    /* Debug controls */
     .debug-controls {
       position: fixed;
       top: 20px;
@@ -112,8 +94,7 @@
       50% { transform: scale(1.1); }
     }
 
-    /* Cata-vento - Você pode substituir por PNG direto */
-   .pinwheel {
+    .pinwheel {
       position: absolute;
       width: 60px;
       height: 60px;
@@ -126,17 +107,11 @@
       width: 50px;
       height: 50px;
       margin: 5px auto;
-      /* Removi background-image - adicione sua imagem PNG aqui */
-      background-image: url('pinwheel.png'); 
-      background-size: contain;
-      background-repeat: no-repeat;
-      background-position: center;
+      background: conic-gradient(from 0deg, #ff6b9d, #ffd700, #4ecdc4, #45b7d1, #ff6b9d);
+      border-radius: 50% 10% 50% 10%;
       position: relative;
-      
     }
 
-
-    /* Animações de rotação bidirecionais */
     .spin-right {
       animation: spinRight 1s linear infinite;
     }
@@ -160,7 +135,6 @@
       to { top: 100vh; }
     }
 
-    /* Nuvem ruim */
     .bad-cloud {
       position: absolute;
       width: 60px;
@@ -218,7 +192,6 @@
       100% { opacity: 0.5; }
     }
 
-    /* Coração bônus - Você pode substituir por PNG direto */
     .bonus-heart {
       position: absolute;
       width: 40px;
@@ -228,23 +201,35 @@
       animation: fall linear;
     }
 
-    
     .heart {
       width: 30px;
       height: 30px;
       margin: 5px auto;     
-      background-image: url('like.png');
-      background-size: contain;
-      background-repeat: no-repeat;
-      background-position: center;
-      
-      
-    
-    }  
+      background: #ff69b4;
+      position: relative;
+      transform: rotate(-45deg);
+    }
 
-    
+    .heart:before,
+    .heart:after {
+      content: '';
+      width: 30px;
+      height: 30px;
+      position: absolute;
+      left: 15px;
+      top: 0;
+      background: #ff69b4;
+      border-radius: 15px 15px 0 0;
+      transform: rotate(-45deg);
+      transform-origin: 0 15px;
+    }
 
-    /* Efeitos visuais */
+    .heart:after {
+      left: 0;
+      transform: rotate(45deg);
+      transform-origin: 15px 15px;
+    }
+
     .effect {
       position: absolute;
       font-size: 1.5em;
@@ -267,7 +252,6 @@
       }
     }
 
-    /* Modals */
     .modal {
       position: fixed;
       top: 0;
@@ -333,7 +317,6 @@
       background: #45b7d1;
     }
 
-    /* Tab system */
     .tab-buttons {
       display: flex;
       justify-content: center;
@@ -364,7 +347,6 @@
       display: block;
     }
 
-    /* Ranking list */
     .ranking-list {
       max-height: 300px;
       overflow-y: auto;
@@ -383,7 +365,6 @@
       box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     }
 
-    /* Rules text */
     .rules-text {
       text-align: left;
       line-height: 1.6;
@@ -399,6 +380,23 @@
     }
 
     .hidden { display: none; }
+
+    .mensagem-sucesso, .mensagem-erro, .mensagem-info {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 10001;
+      max-width: 400px;
+      border-radius: 5px;
+      padding: 15px;
+      margin: 10px 0;
+      animation: slideIn 0.3s ease-out;
+    }
+
+    @keyframes slideIn {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
   </style>
 </head>
 <body>
@@ -499,7 +497,14 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <script>
-    console.log('🚀 VERSÃO 4.0 CARREGADA! Sistema de ranking corrigido!');
+    console.log('🚀 VERSÃO 6.0 CARREGADA! Tabela ranking_cataventos corrigida!');
+
+    // === CONFIGURAÇÃO DO SUPABASE ===
+    // IMPORTANTE: A tabela no Supabase deve se chamar 'ranking_cataventos'
+    const SUPABASE_URL = 'https://wnzdcucbveynkwgoskwg.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InduemRjdWNidmV5bmt3Z29za3dnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYzMzgyODUsImV4cCI6MjA3MTkxNDI4NX0.2QeIFlwn4NLPWeMS_Ul8cauultfwUaHiGHY1XVyEcp0';
+    
+    let supabaseClient = null;
 
     // === VARIÁVEIS DO JOGO ===
     let gameRunning = false;
@@ -519,7 +524,238 @@
       getHeartChance: () => 0.06
     };
 
-    // === FUNÇÕES DE ÁUDIO E EFEITOS ===
+    // === FUNÇÕES DO SUPABASE ===
+    function inicializarSupabase() {
+      try {
+        if (typeof window.supabase !== 'undefined' && window.supabase.createClient) {
+          supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+          console.log('✅ Supabase inicializado com sucesso!');
+          return true;
+        } else {
+          console.log('⚠️ Supabase ainda não está disponível');
+          return false;
+        }
+      } catch (error) {
+        console.error('❌ Erro ao inicializar Supabase:', error);
+        return false;
+      }
+    }
+
+    async function salvarRanking(nomeJogador, pontuacao, tempoSegundos, totalPerguntas, acertos) {
+      try {
+        console.log('💾 Salvando ranking...', { nomeJogador, pontuacao, tempoSegundos });
+
+        if (!supabaseClient) {
+          if (!inicializarSupabase()) {
+            throw new Error('Supabase não disponível');
+          }
+        }
+
+        const dadosRanking = {
+          nome_jogador: nomeJogador.trim(),
+          pontuacao: pontuacao,
+          tempo_segundos: tempoSegundos || 0,
+          total_perguntas: totalPerguntas || Math.floor(pontuacao / 10),
+          acertos: acertos || Math.floor(pontuacao / 10),
+          percentual_acerto: totalPerguntas > 0 ? Math.round((acertos / totalPerguntas) * 100) : 100,
+          data_jogo: new Date().toISOString()
+        };
+
+        // Verificar se jogador já existe
+        const { data: existingData, error: searchError } = await supabaseClient
+          .from('ranking_cataventos')
+          .select('*')
+          .eq('nome_jogador', nomeJogador.trim())
+          .maybeSingle();
+
+        if (searchError && searchError.code !== 'PGRST116') {
+          throw searchError;
+        }
+
+        if (existingData) {
+          if (pontuacao > existingData.pontuacao) {
+            const { data, error } = await supabaseClient
+              .from('ranking_cataventos')
+              .update({
+                pontuacao: pontuacao,
+                tempo_segundos: tempoSegundos,
+                total_perguntas: dadosRanking.total_perguntas,
+                acertos: dadosRanking.acertos,
+                percentual_acerto: dadosRanking.percentual_acerto,
+                data_jogo: dadosRanking.data_jogo
+              })
+              .eq('nome_jogador', nomeJogador.trim())
+              .select();
+
+            if (error) throw error;
+            console.log('✅ Ranking atualizado!');
+            mostrarMensagemSucesso('Novo recorde! Ranking atualizado!');
+            return { success: true, data };
+          } else {
+            console.log('📊 Pontuação não supera o recorde');
+            mostrarMensagemInfo(`Sua pontuação: ${pontuacao}. Recorde: ${existingData.pontuacao}`);
+            return { success: true, message: 'Pontuação não supera recorde' };
+          }
+        } else {
+          const { data, error } = await supabaseClient
+            .from('ranking_cataventos')
+            .insert(dadosRanking)
+            .select();
+
+          if (error) throw error;
+          console.log('✅ Novo ranking salvo!');
+          mostrarMensagemSucesso('Ranking salvo com sucesso!');
+          return { success: true, data };
+        }
+
+      } catch (error) {
+        console.error('❌ Erro ao salvar ranking:', error);
+        mostrarMensagemErro('Erro: ' + error.message);
+        salvarNoLocalStorage(nomeJogador, pontuacao, tempoSegundos);
+        return { success: false, error };
+      }
+    }
+
+    async function buscarRanking(limite = 10) {
+      try {
+        if (!supabaseClient) {
+          if (!inicializarSupabase()) {
+            return buscarRankingLocalStorage();
+          }
+        }
+
+        const { data, error } = await supabaseClient
+          .from('ranking_cataventos')
+          .select('*')
+          .order('pontuacao', { ascending: false })
+          .order('tempo_segundos', { ascending: true })
+          .limit(limite);
+
+        if (error) {
+          console.error('❌ Erro ao buscar ranking:', error);
+          return buscarRankingLocalStorage();
+        }
+
+        return data || [];
+
+      } catch (error) {
+        console.error('❌ Erro ao buscar ranking:', error);
+        return buscarRankingLocalStorage();
+      }
+    }
+
+    async function buscarPosicaoJogador(nomeJogador) {
+      try {
+        const todosJogadores = await buscarRanking(1000);
+        const posicao = todosJogadores.findIndex(jogador => 
+          jogador.nome_jogador.toLowerCase() === nomeJogador.toLowerCase()
+        ) + 1;
+
+        return {
+          posicao: posicao,
+          total: todosJogadores.length,
+          encontrado: posicao > 0
+        };
+      } catch (error) {
+        console.error('❌ Erro ao buscar posição:', error);
+        return { posicao: 0, total: 0, encontrado: false };
+      }
+    }
+
+    // === FUNÇÕES DE FALLBACK (LOCALSTORAGE) ===
+    function salvarNoLocalStorage(nomeJogador, pontuacao, tempoSegundos) {
+      try {
+        console.log('📱 Salvando no localStorage...');
+        
+        const rankings = JSON.parse(localStorage.getItem('pinwheelRankings') || '[]');
+        
+        const novoRanking = {
+          nome_jogador: nomeJogador,
+          pontuacao: pontuacao,
+          tempo_segundos: tempoSegundos,
+          data_jogo: new Date().toISOString()
+        };
+        
+        const indexExistente = rankings.findIndex(r => 
+          r.nome_jogador.toLowerCase() === nomeJogador.toLowerCase()
+        );
+        
+        if (indexExistente >= 0) {
+          if (pontuacao > rankings[indexExistente].pontuacao) {
+            rankings[indexExistente] = novoRanking;
+            console.log('📱 Ranking atualizado localmente');
+          }
+        } else {
+          rankings.push(novoRanking);
+          console.log('📱 Novo ranking salvo localmente');
+        }
+        
+        rankings.sort((a, b) => b.pontuacao - a.pontuacao);
+        rankings.splice(10);
+        
+        localStorage.setItem('pinwheelRankings', JSON.stringify(rankings));
+        
+      } catch (error) {
+        console.error('❌ Erro no localStorage:', error);
+      }
+    }
+
+    function buscarRankingLocalStorage() {
+      try {
+        const rankings = JSON.parse(localStorage.getItem('pinwheelRankings') || '[]');
+        return rankings.map(rank => ({
+          nome_jogador: rank.nome_jogador || rank.nome,
+          pontuacao: rank.pontuacao,
+          tempo_segundos: rank.tempo_segundos || rank.tempo || 0,
+          data_jogo: rank.data_jogo || rank.data
+        })).slice(0, 10);
+      } catch (error) {
+        console.error('❌ Erro ao buscar localStorage:', error);
+        return [];
+      }
+    }
+
+    // === FUNÇÕES DE MENSAGENS ===
+    function mostrarMensagemSucesso(mensagem) {
+      console.log('✅', mensagem);
+      const div = document.createElement('div');
+      div.className = 'mensagem-sucesso';
+      div.innerHTML = `
+        <div style="background: #d4edda; color: #155724; padding: 15px; border-radius: 5px; border: 1px solid #c3e6cb;">
+          <strong>✅ Sucesso!</strong> ${mensagem}
+        </div>
+      `;
+      document.body.appendChild(div);
+      setTimeout(() => div.remove(), 5000);
+    }
+
+    function mostrarMensagemErro(mensagem) {
+      console.error('❌', mensagem);
+      const div = document.createElement('div');
+      div.className = 'mensagem-erro';
+      div.innerHTML = `
+        <div style="background: #f8d7da; color: #721c24; padding: 15px; border-radius: 5px; border: 1px solid #f5c6cb;">
+          <strong>❌ Erro!</strong> ${mensagem}
+        </div>
+      `;
+      document.body.appendChild(div);
+      setTimeout(() => div.remove(), 8000);
+    }
+
+    function mostrarMensagemInfo(mensagem) {
+      console.log('ℹ️', mensagem);
+      const div = document.createElement('div');
+      div.className = 'mensagem-info';
+      div.innerHTML = `
+        <div style="background: #d1ecf1; color: #0c5460; padding: 15px; border-radius: 5px; border: 1px solid #bee5eb;">
+          <strong>ℹ️ Info:</strong> ${mensagem}
+        </div>
+      `;
+      document.body.appendChild(div);
+      setTimeout(() => div.remove(), 6000);
+    }
+
+    // === FUNÇÕES DE ÁUDIO ===
     let audioContext;
     try {
       audioContext = new (window.AudioContext || window.webkitAudioContext)();
@@ -581,7 +817,6 @@
       
       let wasClicked = false;
       
-      // Click handler
       pinwheel.onclick = (e) => {
         if (!gameRunning || wasClicked) return;
         wasClicked = true;
@@ -606,19 +841,13 @@
         pinwheel.remove();
       };
       
-      // Timer para catavento perdido
       setTimeout(() => {
         if (!wasClicked && gameRunning && pinwheel.parentNode) {
-          console.log('🔥 CATAVENTO PERDIDO! Antes:', { score, lives, combo });
-          
           score = Math.max(0, score - 5);
           lives = Math.max(0, lives - 1);
           combo = 0;
           
-          console.log('🔥 CATAVENTO PERDIDO! Depois:', { score, lives, combo });
-          
           updateUI();
-          
           createEffect(window.innerWidth / 2, 150, '-5 pontos', '#FF4444');
           createEffect(window.innerWidth / 2, 190, '-1 ❤️', '#FF4444');
           
@@ -717,7 +946,7 @@
       }
     }
 
-    // === FUNÇÕES DO JOGO ===
+    // === FUNÇÕES PRINCIPAIS DO JOGO ===
     function startGame() {
       const name = document.getElementById('nameInput').value.trim();
       if (!name) {
@@ -759,7 +988,6 @@
       
       document.querySelectorAll('.pinwheel, .bad-cloud, .bonus-heart').forEach(obj => obj.remove());
       
-      // Calcular tempo de jogo
       const gameTimeSeconds = Math.round((Date.now() - gameStartTime) / 1000);
       
       let title, message;
@@ -785,93 +1013,34 @@
         <strong>Tempo:</strong> ${gameTimeSeconds}s
       `;
 
-      // Salvar no ranking
+      // Salvar ranking
       try {
-        console.log('💾 Tentando salvar no ranking...');
+        console.log('💾 Salvando ranking...');
         
-        // Aguardar um pouco para garantir que os scripts de ranking carregaram
-        await new Promise(resolve => setTimeout(resolve, 500));
+        const resultado = await salvarRanking(
+          playerName,
+          score,
+          gameTimeSeconds,
+          Math.floor(score / 10),
+          Math.floor(score / 10)
+        );
         
-        if (typeof window.salvarRanking === 'function') {
-          console.log('✅ Função salvarRanking encontrada, salvando...');
-          
-          const resultado = await window.salvarRanking(
-            playerName,
-            score,
-            gameTimeSeconds,
-            Math.floor(score / 10), // Estimativa de total de perguntas baseada na pontuação
-            Math.floor(score / 10)  // Estimativa de acertos
-          );
-          
-          console.log('💾 Resultado do salvamento:', resultado);
-          
-          // Buscar posição do jogador
-          if (typeof window.buscarPosicaoJogador === 'function') {
-            console.log('🔍 Buscando posição do jogador...');
-            
-            const posicaoInfo = await window.buscarPosicaoJogador(playerName);
-            console.log('📍 Posição encontrada:', posicaoInfo);
-            
-            if (posicaoInfo.encontrado) {
-              const emoji = posicaoInfo.posicao === 1 ? '🥇' : posicaoInfo.posicao === 2 ? '🥈' : posicaoInfo.posicao === 3 ? '🥉' : '🏅';
-              document.getElementById('posicaoJogador').innerHTML = `
-                ${emoji} <strong>Você está na ${posicaoInfo.posicao}ª posição</strong> de ${posicaoInfo.total} jogadores!
-              `;
-              document.getElementById('posicaoJogador').style.display = 'block';
-            }
-          }
-        } else {
-          console.log('⚠️ Função salvarRanking não encontrada, usando fallback...');
-          salvarLocalFallback();
+        // Buscar posição
+        const posicaoInfo = await buscarPosicaoJogador(playerName);
+        
+        if (posicaoInfo.encontrado) {
+          const emoji = posicaoInfo.posicao === 1 ? '🥇' : posicaoInfo.posicao === 2 ? '🥈' : posicaoInfo.posicao === 3 ? '🥉' : '🏅';
+          document.getElementById('posicaoJogador').innerHTML = `
+            ${emoji} <strong>Você está na ${posicaoInfo.posicao}ª posição</strong> de ${posicaoInfo.total} jogadores!
+          `;
+          document.getElementById('posicaoJogador').style.display = 'block';
         }
         
       } catch (error) {
-        console.error('❌ Erro ao salvar ranking:', error);
-        salvarLocalFallback();
+        console.error('❌ Erro ao processar fim de jogo:', error);
       }
       
       document.getElementById('endModal').classList.remove('hidden');
-    }
-
-    // Função de fallback para salvar localmente
-    function salvarLocalFallback() {
-      try {
-        console.log('📱 Salvando no localStorage como fallback...');
-        
-        const rankings = JSON.parse(localStorage.getItem('pinwheelRankings') || '[]');
-        
-        const novoRanking = {
-          nome: playerName,
-          pontuacao: score,
-          nivel: level,
-          tempo: Math.round((Date.now() - gameStartTime) / 1000),
-          data: new Date().toLocaleString('pt-BR')
-        };
-        
-        // Verificar se jogador já existe
-        const indexExistente = rankings.findIndex(r => r.nome.toLowerCase() === playerName.toLowerCase());
-        
-        if (indexExistente >= 0) {
-          // Atualizar apenas se pontuação for maior
-          if (score > rankings[indexExistente].pontuacao) {
-            rankings[indexExistente] = novoRanking;
-            console.log('📱 Ranking atualizado no localStorage');
-          }
-        } else {
-          // Adicionar novo
-          rankings.push(novoRanking);
-          console.log('📱 Novo ranking salvo no localStorage');
-        }
-        
-        // Ordenar e manter apenas top 10
-        rankings.sort((a, b) => b.pontuacao - a.pontuacao);
-        rankings.splice(10);
-        
-        localStorage.setItem('pinwheelRankings', JSON.stringify(rankings));
-        
-      } catch (error) {
-        console.error('❌ Erro ao salvar no localStorage:', error);
-      }
     }
 
     // === FUNÇÕES DE RANKING ===
@@ -882,27 +1051,7 @@
         console.log('📊 Carregando ranking...');
         rankingList.innerHTML = '<div style="text-align: center; padding: 20px;">🏆 Carregando...</div>';
         
-        let rankings = [];
-
-        // Aguardar um pouco para garantir que os scripts carregaram
-        await new Promise(resolve => setTimeout(resolve, 500));
-
-        // Usar a função do sistema de ranking se disponível
-        if (typeof window.buscarRanking === 'function') {
-          console.log('✅ Função buscarRanking encontrada');
-          rankings = await window.buscarRanking(10);
-        } else {
-          console.log('⚠️ Função buscarRanking não encontrada, usando localStorage');
-          rankings = JSON.parse(localStorage.getItem('pinwheelRankings') || '[]');
-          
-          // Converter formato para compatibilidade
-          rankings = rankings.map(rank => ({
-            nome_jogador: rank.nome || rank.nome_jogador,
-            pontuacao: rank.pontuacao,
-            tempo_segundos: rank.tempo || rank.tempo_segundos || 0,
-            data_jogo: rank.data || rank.data_jogo
-          }));
-        }
+        const rankings = await buscarRanking(10);
         
         if (rankings.length === 0) {
           rankingList.innerHTML = '<p style="text-align: center; color: #888;">🏆 Seja o primeiro!</p>';
@@ -912,13 +1061,12 @@
         rankingList.innerHTML = rankings.map((rank, index) => {
           const emoji = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : '🏅';
           const dataFormatada = rank.data_jogo ? 
-            new Date(rank.data_jogo).toLocaleDateString('pt-BR') : 
-            rank.data || 'N/A';
+            new Date(rank.data_jogo).toLocaleDateString('pt-BR') : 'N/A';
           const tempo = rank.tempo_segundos ? `${rank.tempo_segundos}s` : 'N/A';
           
           return `
             <div class="ranking-item">
-              <strong>${emoji} ${index + 1}º ${rank.nome_jogador || rank.nome}</strong><br>
+              <strong>${emoji} ${index + 1}º ${rank.nome_jogador}</strong><br>
               <small>
                 🎯 ${rank.pontuacao} pontos • 
                 ⏱️ ${tempo} • 
@@ -937,15 +1085,13 @@
     }
 
     async function clearRanking() {
-      if (!confirm('Tem certeza que deseja limpar todo o ranking?')) return;
-
+      if (!confirm('Tem certeza que deseja limpar todo o ranking local?')) return;
       localStorage.removeItem('pinwheelRankings');
       console.log('🗑️ Ranking local limpo');
-      
       await loadRanking();
     }
 
-    // === FUNÇÕES DE MODAL E NAVEGAÇÃO ===
+    // === FUNÇÕES DE MODAL ===
     async function showRankingModal() {
       await loadRanking();
       document.getElementById('rankingModal').classList.remove('hidden');
@@ -1045,11 +1191,15 @@
     });
 
     // === INICIALIZAÇÃO ===
-    console.log('🎮 Sistema de jogo inicializado. Aguardando scripts de ranking...');
-  </script>
+    document.addEventListener('DOMContentLoaded', function() {
+      console.log('🎮 DOM carregado, aguardando Supabase...');
+      setTimeout(() => {
+        inicializarSupabase();
+        console.log('✅ Sistema totalmente inicializado!');
+      }, 1000);
+    });
 
-  <!-- Arquivos do sistema de ranking (carregados por último) -->
-  <script src="api/salvar-ranking.js"></script>
-  <script src="api/ranking-jogo.js"></script>
+    console.log('🎮 Sistema de jogo inicializado!');
+  </script>
 </body>
 </html>
